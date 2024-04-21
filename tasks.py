@@ -10,7 +10,7 @@ ROOT_PATH = Path(__file__).parent
 SRC_PATH = ROOT_PATH / "crypto_dot_com"
 TEST_PATH = ROOT_PATH / "tests"
 
-_ALL_CODE_PATHS = (SRC_PATH, TEST_PATH)
+_PATHS = (SRC_PATH, TEST_PATH)
 
 
 def run_autoformat(ctx: Context, path: Path):
@@ -33,7 +33,7 @@ def run_autoformat(ctx: Context, path: Path):
 
 @task
 def autoformat(ctx: Context) -> None:
-    for path in _ALL_CODE_PATHS:
+    for path in _PATHS:
         run_autoformat(ctx, path)
 
 
@@ -61,7 +61,7 @@ def run_linters(ctx: Context, path: Path, exclude: Optional[list[str]] = None) -
 
 @task
 def lint(ctx: Context) -> None:
-    for path in _ALL_CODE_PATHS:
+    for path in _PATHS:
         run_linters(ctx, path)
 
 
@@ -86,3 +86,5 @@ ns = Collection()
 ns.add_task(autoformat)
 ns.add_task(lint)
 ns.add_task(test)
+ns.add_task(build)
+ns.add_task(deploy)
