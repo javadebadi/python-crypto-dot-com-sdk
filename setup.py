@@ -1,10 +1,14 @@
 # Import required functions
-from setuptools import setup, find_packages
+from pathlib import Path
+
+from setuptools import find_packages, setup
+
+import crypto_dot_com
 
 # read the contents of your README file
-from pathlib import Path
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
+
 
 # Call setup function
 setup(
@@ -13,11 +17,11 @@ setup(
     description="A simple python wrapper for crypto.com API",
     name="python-crypto-dot-com-sdk",
     packages=find_packages(include=["crypto_dot_com", "crypto_dot_com.*"]),
-    version="0.0.0",
-    install_requires=['requests'],
-    python_requires='>=3.7',
-    license='MIT',
-    url='https://github.com/javadebadi/python-crypto-dot-com-sdk',
+    version=crypto_dot_com.__version__,
+    install_requires=["requests"],
+    python_requires=">=3.11",
+    license="Apache 2.0",
+    url="https://github.com/javadebadi/python-crypto-dot-com-sdk",
     long_description=long_description,
-    long_description_content_type='text/markdown'
+    long_description_content_type="text/markdown",
 )
