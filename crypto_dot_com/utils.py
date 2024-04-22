@@ -1,4 +1,6 @@
+import json
 import time
+from typing import Any
 
 
 def get_current_time_ms() -> int:
@@ -19,3 +21,8 @@ def get_current_time_ms_as_string() -> str:
     str
     """
     return f"{get_current_time_ms()}"
+
+
+def json_to_file(obj: dict[Any, Any] | list[Any], filepath: str) -> None:
+    with open(filepath, "w") as f:
+        json.dump(obj, f)

@@ -5,20 +5,35 @@ from typing import Any
 
 import requests
 
-from crypto_dot_com.data_models import CryptDotComResponseType
+from crypto_dot_com.data_models.crypto_dot_com import CryptDotComResponseType
+from crypto_dot_com.data_models.crypto_dot_com import (
+    ListAllAvailableMarketSymbolsResponse,
+)
+from crypto_dot_com.data_models.mappings import (
+    map_to_standard_list_of_symbols_info,
+)
+from crypto_dot_com.data_models.standard import SymbolSummaryInfo
+from crypto_dot_com.exceptions import CryptoDotComAPIException
 from crypto_dot_com.settings import API_VERSION
 from crypto_dot_com.settings import ROOT_API_ENDPOINT
+from crypto_dot_com.settings import URIS
+from crypto_dot_com.settings import log_json_response
 from crypto_dot_com.utils import get_current_time_ms_as_string
 
 
 class CryptoAPI:
     def __init__(
-        self, api_key: str, api_secret: str, timeout: int = 1000
+        self,
+        api_key: str,
+        api_secret: str,
+        timeout: int = 1000,
+        log_json_response_to_file: bool = False,
     ) -> None:
         self._timeout = timeout
         self._base_url = ROOT_API_ENDPOINT + "/" + API_VERSION
         self.api_key = api_key
         self.api_secret = api_secret
+        self.log_json_response_to_file = log_json_response_to_file
 
     def _get_headers(self, method: str) -> dict[str, str]:
         if method in ["POST", "DELETE"]:
@@ -39,6 +54,8 @@ class CryptoAPI:
                 headers=self._get_headers(method="GET"),
                 timeout=self._timeout,
             )
+            if self.log_json_response_to_file is True:
+                log_json_response(response=response)
             if response.ok:
                 response_data: CryptDotComResponseType = response.json()
                 return response_data
@@ -65,6 +82,8 @@ class CryptoAPI:
                 headers=self._get_headers(method="POST"),
                 timeout=self._timeout,
             )
+            if self.log_json_response_to_file is True:
+                log_json_response(response=response)
             if response.ok:
                 response_data: CryptDotComResponseType = response.json()
                 return response_data
@@ -177,3 +196,77 @@ class CryptoAPI:
         params["type"] = 1
         params["volume"] = size
         return self._post(url, params, sign=True)
+
+    def get_url(self, uri: str) -> str:
+        return self._base_url + uri
+
+
+class CryptoDotComMarketClient(CryptoAPI):
+
+    def list_all_available_market_symbols(
+        self,
+    ) -> list[SymbolSummaryInfo]:
+        """URI: /symbols
+
+
+        API DOC
+        -------
+        https://crypto.com/exchange-docs-v1#common-symbols
+
+        List all available market symbols
+        Endpoint URL: /v1/symbols
+        Method: GET
+        Description: queries all transaction pairs and precision supported by
+        the system.
+        This is a public interface, request signature is not needed
+        Request Parameter: no parameter is allowed
+        Response Content-Type: application/json
+        Response JSON fields: see below
+        Response JSON Field	Example	Description
+        code	0	Return code, 0 for success, non-zero for failure
+        msg	"suc"	Success or the error message
+        data	shown below
+        {
+            "code": "0",
+            "msg": "suc",
+            "data": [
+                {
+                    "symbol": "ethbtc", // Transaction pairs
+                    "count_coin": "btc", // Money of Account
+                    "amount_precision": 3, // Quantitative precision digits
+                    (0 is a single digit)
+                    "base_coin": "eth", // Base currency
+                    "price_precision": 8 // Price Precision Number
+                    (0 is a single digit)
+                },
+                {
+                    "symbol": "ltcbtc",
+                    "count_coin": "btc",
+                    "amount_precision": 2,
+                    "base_coin": "ltc",
+                    "price_precision": 8
+                },
+                {
+                    "symbol": "etcbtc",
+                    "count_coin": "btc",
+                    "amount_precision": 2,
+                    "base_coin": "etc",
+                    "price_precision": 8
+                }
+            ]
+        }
+        """
+        response_data = self._get(
+            url=self.get_url(URIS["list_all_available_market_symbols"]),
+            params={},
+            sign=False,
+        )
+        if response_data["code"] == "0":
+            all_symbols_info = ListAllAvailableMarketSymbolsResponse(
+                symbols_info=response_data["data"]
+            )
+        else:
+            raise CryptoDotComAPIException(
+                f"msg: {response_data['msg']} - code: {response_data['code']}"
+            )
+        return map_to_standard_list_of_symbols_info(symbols=all_symbols_info)
