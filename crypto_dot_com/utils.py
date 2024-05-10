@@ -25,4 +25,4 @@ def get_current_time_ms_as_string() -> str:
 
 def json_to_file(obj: dict[Any, Any] | list[Any], filepath: str) -> None:
     with open(filepath, "w") as f:
-        json.dump(obj, f)
+        json.dump(obj, f, indent=4)
