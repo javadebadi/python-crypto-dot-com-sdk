@@ -2,8 +2,8 @@ from pathlib import Path
 from typing import Optional
 
 from invoke.collection import Collection
-from invoke.tasks import task
 from invoke.context import Context
+from invoke.tasks import task
 
 ROOT_PATH = Path(__file__).parent
 
@@ -37,7 +37,9 @@ def autoformat(ctx: Context) -> None:
         run_autoformat(ctx, path)
 
 
-def run_linters(ctx: Context, path: Path, exclude: Optional[list[str]] = None) -> None:
+def run_linters(
+    ctx: Context, path: Path, exclude: Optional[list[str]] = None
+) -> None:
 
     with ctx.cd(ROOT_PATH):
         print(f"\U000027A1 Running code quality checks on {path.name}")
@@ -82,9 +84,35 @@ def deploy(ctx: Context) -> None:
     print("Finished deploy!")
 
 
+@task
+def freeze(ctx: Context) -> None:
+    ctx.run("pip freeze > requirements_lock.txt")
+    print("Freezed python packages")
+
+
+@task
+def install(ctx: Context) -> None:
+    ctx.run("pip-compile -r requirements.in")
+    ctx.run("pip-compile -r requirements_dev.in")
+    ctx.run("pip install -r requirements.txt")
+    ctx.run("pip install -r requirements_dev.txt")
+    ctx.run("pip freeze > requirements_lock.txt")
+    print("Installed python packages and freezed!")
+
+
+@task
+def tag(ctx: Context) -> None:
+    import crypto_dot_com
+
+    ctx.run(f"git tag v{crypto_dot_com.__version__}")
+    ctx.run("git push --tags")
+
+
 ns = Collection()
 ns.add_task(autoformat)
 ns.add_task(lint)
 ns.add_task(test)
 ns.add_task(build)
 ns.add_task(deploy)
+ns.add_task(install)
+ns.add_task(tag)
