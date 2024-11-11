@@ -1,80 +1,62 @@
-from unittest.mock import patch
+from typing import Any
+from unittest import mock
 
-from crypto_dot_com.client import CryptoDotComMarketClient
-from crypto_dot_com.data_models.standard import SymbolSummaryInfo
-from crypto_dot_com.settings import ROOT_API_ENDPOINT
+from crypto_dot_com.client import CryptoAPI
 
 
-def test_list_all_available_market_symbols() -> None:
-    # Expected JSON response
-    expected_json = {
-        "code": "0",
-        "msg": "suc",
-        "data": [
+class MockResponse:
+    def __init__(self, json_data: dict[str, Any], status_code: int):
+        self.json_data = json_data
+        self.status_code = status_code
+
+    def ok(self) -> bool:
+        return True
+
+    def json(self) -> dict[str, Any]:
+        return self.json_data
+
+
+# This method will be used by the mock to replace requests.post
+def mocked_requests_post(*args: Any, **kwargs: Any) -> "MockResponse":
+
+    if args[0] == "https://api.crypto.com/exchange/v1/private/create-order":
+        return MockResponse(
             {
-                "symbol": "ethbtc",
-                "count_coin": "btc",
-                "amount_precision": 3,
-                "base_coin": "eth",
-                "price_precision": 8,
+                "id": 4151042,
+                "method": "private/create-order",
+                "code": 0,
+                "result": {
+                    "client_oid": "1111111",
+                    "order_id": "11111000000000000001",
+                },
             },
-            {
-                "symbol": "ltcbtc",
-                "count_coin": "btc",
-                "amount_precision": 2,
-                "base_coin": "ltc",
-                "price_precision": 8,
-            },
-            {
-                "symbol": "etcbtc",
-                "count_coin": "btc",
-                "amount_precision": 2,
-                "base_coin": "etc",
-                "price_precision": 8,
-            },
-        ],
-    }
-
-    # Given a client
-    client = CryptoDotComMarketClient(api_key="", api_secret="")
-
-    with patch("requests.get") as mock_get:
-        # And mocking the requests.get function
-        mock_get.return_value.json.return_value = expected_json
-
-        # When calling the function that sends the GET request
-        data = client.list_all_available_market_symbols()
-
-        # Then the requests.get was called with the correct URL
-        mock_get.assert_called_once_with(
-            f"{ROOT_API_ENDPOINT}/v1/symbols",
-            "",
-            headers={},
-            timeout=1000,
+            200,
         )
 
-        # And then the returned data is as expected
-        assert data[0] == SymbolSummaryInfo(
-            symbol="ethbtc",
-            quote_currency="btc",
-            base_currency="eth",
-            price_precision=8,
-            amount_precision=3,
-            exchange="crypto.com",
+    return MockResponse({}, 404)
+
+
+class TestCryptoAPI:
+
+    @mock.patch("requests.post", side_effect=mocked_requests_post)
+    def test_create_limit_order(self, mock_post: mock.Mock) -> None:
+        # Given API Client
+        client = CryptoAPI(
+            api_key="", api_secret="", log_json_response_to_file=False
         )
-        assert data[1] == SymbolSummaryInfo(
-            symbol="ltcbtc",
-            quote_currency="btc",
-            base_currency="ltc",
-            price_precision=8,
-            amount_precision=2,
-            exchange="crypto.com",
+
+        # When calling the function to create limit order
+        data = client.create_limit_order(
+            instrument_name="CRO_USD",
+            quantity=str(100),
+            price=str(0.14),
+            side="BUY",
         )
-        assert data[2] == SymbolSummaryInfo(
-            symbol="etcbtc",
-            quote_currency="btc",
-            base_currency="etc",
-            price_precision=8,
-            amount_precision=2,
-            exchange="crypto.com",
-        )
+
+        assert data.model_dump() == {
+            "client_oid": "1111111",
+            "order_id": "11111000000000000001",
+        }
+
+        # Then the requests.post was called with the correct URL
+        mock_post.assert_called_once()

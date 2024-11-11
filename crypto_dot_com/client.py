@@ -1,24 +1,21 @@
-import hashlib
-import urllib
-import urllib.parse
+import datetime
 from typing import Any
 
 import requests
 
-from crypto_dot_com.data_models.crypto_dot_com import CryptDotComResponseType
-from crypto_dot_com.data_models.crypto_dot_com import (
-    ListAllAvailableMarketSymbolsResponse,
-)
-from crypto_dot_com.data_models.mappings import (
-    map_to_standard_list_of_symbols_info,
-)
-from crypto_dot_com.data_models.standard import SymbolSummaryInfo
-from crypto_dot_com.exceptions import CryptoDotComAPIException
+from crypto_dot_com.data_models import CreateOrderDataMessage
+from crypto_dot_com.data_models import OrderHistoryDataMessage
+from crypto_dot_com.data_models.crypto_dot_com import CryptoDotComErrorResponse
+from crypto_dot_com.data_models.crypto_dot_com import CryptoDotComResponseType
+from crypto_dot_com.data_models.request_message import CreateLimitOrderMessage
+from crypto_dot_com.enums import CryptoDotComMethodsEnum
+from crypto_dot_com.exceptions import BadPriceException
+from crypto_dot_com.exceptions import BadQuantityException
+from crypto_dot_com.request_builder import CryptoDotComRequestBuilder
 from crypto_dot_com.settings import API_VERSION
 from crypto_dot_com.settings import ROOT_API_ENDPOINT
-from crypto_dot_com.settings import URIS
 from crypto_dot_com.settings import log_json_response
-from crypto_dot_com.utils import get_current_time_ms_as_string
+from crypto_dot_com.utils import get_day_timestamps
 
 
 class CryptoAPI:
@@ -37,236 +34,202 @@ class CryptoAPI:
 
     def _get_headers(self, method: str) -> dict[str, str]:
         if method in ["POST", "DELETE"]:
-            return {"Content-Type": "application/x-www-form-urlencoded"}
+            return {"Content-Type": "application/json"}
         else:
             return {}
 
-    def _get(
-        self, url: str, params: dict[str, Any], sign: bool = False
-    ) -> CryptDotComResponseType:
-        if sign is True:
-            params = self._create_signed_params(params)
-        data = urllib.parse.urlencode(params or {})
-        try:
-            response = requests.get(
-                url,
-                data,
-                headers=self._get_headers(method="GET"),
-                timeout=self._timeout,
-            )
-            if self.log_json_response_to_file is True:
-                log_json_response(response=response)
-            if response.ok:
-                response_data: CryptDotComResponseType = response.json()
-                return response_data
-            else:
-                return {
-                    "code": "-1",
-                    "msg": f"response status: {response.status_code}",
-                    "data": None,
-                }
-        except Exception as e:
-            print("httpGet failed, detail is:%s" % e)
-            return {"code": "-1", "msg": str(e), "data": None}
+    # def _get(
+    #     self, url: str, params: dict[str, Any], sign: bool = False
+    # ) -> CryptDotComResponseType | CryptoDotComErrorResponse:
+    #     if sign is True:
+    #         params = self._create_signed_params(params)
+    #     data = urllib.parse.urlencode(params or {})
+    #     try:
+    #         response = requests.get(
+    #             url,
+    #             data,
+    #             headers=self._get_headers(method="GET"),
+    #             timeout=self._timeout,
+    #         )
+    #         if self.log_json_response_to_file is True:
+    #             log_json_response(response=response)
+    #         if response.ok:
+    #             response_data: CryptDotComResponseType = response.json()
+    #             return response_data
+    #         else:
+    #             error_response = CryptoDotComErrorResponse.model_validate(
+    #                 response.json()
+    #             )
+    #             print("Error code = ", response.status_code)
+    #             print("Error message = ", response.json())
+    #             raise RuntimeError(str(error_response))
+    #     except Exception as e:
+    #         print(
+    #             f"Error code = {e}",
+    #         )
+    #         raise e
 
     def _post(
-        self, url: str, params: dict[str, Any], sign: bool = False
-    ) -> CryptDotComResponseType:
-        if sign is True:
-            params = self._create_signed_params(params)
-        data = urllib.parse.urlencode(params or {})
+        self,
+        method: CryptoDotComMethodsEnum,
+        params: dict[str, Any],
+        sign: bool = False,
+        request_id: int | None = None,
+    ) -> CryptoDotComResponseType:
+        builder = CryptoDotComRequestBuilder(
+            method=method,
+            api_key=self.api_key,
+            secret_key=self.api_secret,
+            params=params,
+            sign=sign,
+            request_id=request_id,
+        )
+        request_data = builder.build()
         try:
             response = requests.post(
-                url,
-                data,
-                headers=self._get_headers(method="POST"),
-                timeout=self._timeout,
+                request_data["url"],
+                headers=request_data["headers"],
+                data=request_data["data"],
             )
             if self.log_json_response_to_file is True:
                 log_json_response(response=response)
             if response.ok:
-                response_data: CryptDotComResponseType = response.json()
+                response_data: CryptoDotComResponseType = (
+                    CryptoDotComResponseType.model_validate(response.json())
+                )
+
                 return response_data
             else:
-                return {
-                    "code": "-1",
-                    "msg": f"response status: {response.status_code}",
-                    "data": None,
-                }
+                print("Error code = ", response.status_code)
+                print("Error message = ", response.json())
+                error_response = CryptoDotComErrorResponse.model_validate(
+                    response.json()
+                )
+                if error_response.code == 315:
+                    raise BadPriceException(
+                        f"code: {error_response.code} -"
+                        f"msg: {error_response.message} -"
+                        f"data: {builder} "
+                    )
+                if error_response.code == 308:
+                    raise BadPriceException(
+                        f"code: {error_response.code} -"
+                        f"msg: {error_response.message} -"
+                        f"data: {builder} "
+                    )
+                elif error_response.code == 213:
+                    raise BadQuantityException(
+                        f"code: {error_response.code} -"
+                        f"msg: {error_response.message} -"
+                        f"data: {builder} "
+                    )
+                else:
+                    raise RuntimeError(str(error_response))
+
         except Exception as e:
-            print("httpPost failed, detail is:%s" % e)
-            return {"code": "-1", "msg": str(e), "data": None}
+            print(
+                f"Error code = {e}",
+            )
+            raise e
 
-    def _create_signed_params(self, params: dict[str, Any]) -> dict[str, Any]:
-        if not params:
-            signed_params = {}
-        else:
-            signed_params = params.copy()
-        signed_params["api_key"] = self.api_key
-        signed_params["time"] = get_current_time_ms_as_string()
-        sorted_params = sorted(
-            signed_params.items(), key=lambda d: d[0], reverse=False
-        )
-        messageNotEncoded = (
-            "".join(map(lambda x: str(x[0]) + str(x[1] or ""), sorted_params))
-            + self.api_secret
-        )
-        sign = hashlib.sha256(messageNotEncoded.encode("utf-8")).hexdigest()
-        signed_params["sign"] = sign
-        return signed_params
-
-    def depth(self, symbol: str) -> CryptDotComResponseType:
-        url = self._base_url + "/depth"
-        params = {"symbol": symbol, "type": "step0"}
-        return self._get(url, params)
-
-    def balance(self) -> CryptDotComResponseType:
-        url = self._base_url + "/account"
-        return self._post(url, {}, sign=True)
-
-    def get_all_orders(self, symbol: str) -> CryptDotComResponseType:
-        url = self._base_url + "/allOrders"
-        params = {}
-        params["symbol"] = symbol
-        return self._post(url, params, sign=True)
-
-    def get_order(self, symbol: str, order_id: str) -> CryptDotComResponseType:
-        url = self._base_url + "/showOrder"
-        params = {}
-        params["order_id"] = order_id
-        params["symbol"] = symbol
-        return self._post(url, params, sign=True)
-
-    def get_ordst(self, symbol: str, order_id: str) -> int:
-        url = self._base_url + "/showOrder"
-        params = {}
-        params["order_id"] = order_id
-        params["symbol"] = symbol
-        res = self._post(url, params, sign=True)
-        if res is not None and type(res["data"]) is dict:
-
-            if (
-                ("code" in res)
-                and (res["code"] == "0")
-                and ("order_info" in res["data"])
-            ):
-                status: int = res["data"]["order_info"]["status"]
-                return status
-        return -1
-
-    def get_open_orders(self, symbol: str) -> CryptDotComResponseType:
-        url = self._base_url + "/openOrders"
-        params = {}
-        params["pageSize"] = "200"
-        params["symbol"] = symbol
-        return self._post(url, params, sign=True)
-
-    def get_trades(self, symbol: str) -> CryptDotComResponseType:
-        url = self._base_url + "/myTrades"
-        params = {}
-        params["symbol"] = symbol
-        return self._post(url, params, sign=True)
-
-    def cancel_order(
-        self, symbol: str, order_id: str
-    ) -> CryptDotComResponseType:
-        url = self._base_url + "/orders/cancel"
-        params = {}
-        params["order_id"] = order_id
-        params["symbol"] = symbol
-        return self._post(url, params, sign=True)
-
-    def cancel_order_all(self, symbol: str) -> CryptDotComResponseType:
-        url = self._base_url + "/cancelAllOrders"
-        params = {}
-        params["symbol"] = symbol
-        return self._post(url, params, sign=True)
-
-    def create_order(
-        self, symbol: str, side: str, price: float, size: float
-    ) -> CryptDotComResponseType:
-        """
-        s:return:
-        """
-        url = self._base_url + "/order"
-        params: dict[str, Any] = {}
-        params["price"] = price
-        params["side"] = side
-        params["symbol"] = symbol
-        params["type"] = 1
-        params["volume"] = size
-        return self._post(url, params, sign=True)
-
-    def get_url(self, uri: str) -> str:
-        return self._base_url + uri
-
-
-class CryptoDotComMarketClient(CryptoAPI):
-
-    def list_all_available_market_symbols(
+    def get_order_history(
         self,
-    ) -> list[SymbolSummaryInfo]:
-        """URI: /symbols
-
-
-        API DOC
-        -------
-        https://crypto.com/exchange-docs-v1#common-symbols
-
-        List all available market symbols
-        Endpoint URL: /v1/symbols
-        Method: GET
-        Description: queries all transaction pairs and precision supported by
-        the system.
-        This is a public interface, request signature is not needed
-        Request Parameter: no parameter is allowed
-        Response Content-Type: application/json
-        Response JSON fields: see below
-        Response JSON Field	Example	Description
-        code	0	Return code, 0 for success, non-zero for failure
-        msg	"suc"	Success or the error message
-        data	shown below
-        {
-            "code": "0",
-            "msg": "suc",
-            "data": [
-                {
-                    "symbol": "ethbtc", // Transaction pairs
-                    "count_coin": "btc", // Money of Account
-                    "amount_precision": 3, // Quantitative precision digits
-                    (0 is a single digit)
-                    "base_coin": "eth", // Base currency
-                    "price_precision": 8 // Price Precision Number
-                    (0 is a single digit)
-                },
-                {
-                    "symbol": "ltcbtc",
-                    "count_coin": "btc",
-                    "amount_precision": 2,
-                    "base_coin": "ltc",
-                    "price_precision": 8
-                },
-                {
-                    "symbol": "etcbtc",
-                    "count_coin": "btc",
-                    "amount_precision": 2,
-                    "base_coin": "etc",
-                    "price_precision": 8
-                }
-            ]
-        }
-        """
-        response_data = self._get(
-            url=self.get_url(URIS["list_all_available_market_symbols"]),
-            params={},
-            sign=False,
+        start_time: int,
+        end_time: int,
+        limit: int = 100,  # MAX and Default value in API
+        instrument_name: str | None = None,
+    ) -> list[OrderHistoryDataMessage]:
+        """ """
+        response = self._post(
+            method=CryptoDotComMethodsEnum.PRIVATE_GET_ORDER_HISTORY,
+            params={
+                "instrument_name": instrument_name,
+                "start_time": start_time,
+                "end_time": end_time,
+                "limit": limit,
+            },
+            sign=True,
         )
-        if response_data["code"] == "0":
-            all_symbols_info = ListAllAvailableMarketSymbolsResponse(
-                symbols_info=response_data["data"]
-            )
+        data = response.result["data"]  # type: ignore
+        if len(data) < limit:
+            return [
+                OrderHistoryDataMessage.model_validate(item) for item in data
+            ]
         else:
-            raise CryptoDotComAPIException(
-                f"msg: {response_data['msg']} - code: {response_data['code']}"
+            # logic in case number of records exceeds API limit
+            return self.get_order_history(
+                instrument_name=instrument_name,
+                start_time=start_time,
+                end_time=((start_time + end_time) // 2 + 1),
+                limit=limit,
+            ) + self.get_order_history(
+                instrument_name=instrument_name,
+                start_time=((start_time + end_time) // 2),
+                end_time=end_time,
+                limit=limit,
             )
-        return map_to_standard_list_of_symbols_info(symbols=all_symbols_info)
+
+    def get_all_order_history_of_a_day(
+        self,
+        day: datetime.date,
+        instrument_name: str | None = None,
+    ) -> list[OrderHistoryDataMessage]:
+        start_time, end_time = get_day_timestamps(
+            days_before=0, reference_date=day
+        )
+        return self.get_order_history(
+            start_time=start_time,
+            end_time=end_time,
+            instrument_name=instrument_name,
+        )
+
+    def create_limit_order(
+        self,
+        instrument_name: str,
+        quantity: str | float,
+        side: str,
+        price: str | float,
+    ) -> CreateOrderDataMessage:
+        params = CreateLimitOrderMessage.model_validate(
+            {
+                "instrument_name": instrument_name,
+                "quantity": str(quantity),
+                "side": str(side),
+                "price": str(price),
+            }
+        )
+        response = self._post(
+            method=CryptoDotComMethodsEnum.PRIVATE_CREATE_ORDER,
+            params=params.model_dump(),
+            sign=True,
+        )
+        return CreateOrderDataMessage.model_validate(response.result)
+
+    def cancel_all_orders(self, instrument_name: str | None = None) -> None:
+        """Method is asynchronous and only sends the confirmation"""
+        self._post(
+            method=CryptoDotComMethodsEnum.PRIVATE_CANCEL_ALL_ORDERS,
+            params={
+                "instrument_name": instrument_name,
+            },
+            sign=True,
+        )
+
+    def cancel_order(self, order_id: str) -> None:
+        self._post(
+            method=CryptoDotComMethodsEnum.PRIVATE_CANCEL_ORDER,
+            params={
+                "order_id": order_id,
+            },
+            sign=True,
+        )
+
+    def get_order_details(self, order_id: str) -> OrderHistoryDataMessage:
+        response = self._post(
+            method=CryptoDotComMethodsEnum.PRIVATE_GET_ORDER_DETAILS,
+            params={
+                "order_id": order_id,
+            },
+            sign=True,
+        )
+        return OrderHistoryDataMessage.model_validate(response.result)

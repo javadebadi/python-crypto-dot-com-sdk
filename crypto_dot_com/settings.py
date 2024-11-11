@@ -7,12 +7,15 @@ from requests import Response
 from crypto_dot_com.utils import json_to_file
 
 EXCHANGE_NAME: str = "crypto.com"
-ROOT_API_ENDPOINT: str = "https://api.crypto.com"
+# ROOT_API_ENDPOINT: str = "https://api.crypto.com"
+ROOT_API_ENDPOINT: str = "https://api.crypto.com/exchange"
 API_VERSION: str = "v1"
 ROOT_WEBSOCKET_ENDPOINT: str = "wss://ws.crypto.com/kline-api/ws"
 
 URIS: dict[str, str] = {
     "list_all_available_market_symbols": "/symbols",
+    "get_instruments": "/public/get-instruments",
+    "user_balance": "/private/user-balance",
 }
 
 

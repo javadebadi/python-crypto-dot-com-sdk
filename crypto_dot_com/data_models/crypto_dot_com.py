@@ -1,13 +1,21 @@
 from typing import Any
-from typing import TypedDict
 
 from pydantic import BaseModel
 
 
-class CryptDotComResponseType(TypedDict):
-    data: dict[str, Any] | None
-    code: str
-    msg: str
+class CryptoDotComResponseType(BaseModel):
+    id: int
+    method: str
+    code: int
+    result: Any | None = None
+
+
+class CryptoDotComErrorResponse(BaseModel):
+    id: int
+    method: str
+    code: int
+    message: str
+    result: Any | None = None
 
 
 class AvailableMarketSymbolInfoResponse(BaseModel):
