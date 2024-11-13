@@ -2,16 +2,20 @@ import datetime
 from typing import Any
 
 import requests
+from xarizmi.candlestick import Candlestick
 
 from crypto_dot_com.data_models import CreateOrderDataMessage
 from crypto_dot_com.data_models import OrderHistoryDataMessage
 from crypto_dot_com.data_models.crypto_dot_com import CryptoDotComErrorResponse
 from crypto_dot_com.data_models.crypto_dot_com import CryptoDotComResponseType
 from crypto_dot_com.data_models.request_message import CreateLimitOrderMessage
+from crypto_dot_com.data_models.response import GetCandlestickDataMessage
+from crypto_dot_com.enums import TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM
 from crypto_dot_com.enums import CryptoDotComMethodsEnum
 from crypto_dot_com.exceptions import BadPriceException
 from crypto_dot_com.exceptions import BadQuantityException
 from crypto_dot_com.request_builder import CryptoDotComRequestBuilder
+from crypto_dot_com.request_builder import CryptoDotComUrlBuilder
 from crypto_dot_com.settings import API_VERSION
 from crypto_dot_com.settings import ROOT_API_ENDPOINT
 from crypto_dot_com.settings import log_json_response
@@ -68,6 +72,32 @@ class CryptoAPI:
     #             f"Error code = {e}",
     #         )
     #         raise e
+
+    def _get_public(
+        self,
+        method: CryptoDotComMethodsEnum,
+        params: dict[str, Any],
+    ) -> CryptoDotComResponseType:
+        try:
+            response = requests.get(
+                CryptoDotComUrlBuilder(method=method).build(), params=params
+            )
+            if self.log_json_response_to_file is True:
+                log_json_response(response=response)
+            if response.ok:
+                response_data: CryptoDotComResponseType = (
+                    CryptoDotComResponseType.model_validate(response.json())
+                )
+                return response_data
+            else:
+                print("Error code = ", response.status_code)
+                print("Error message = ", response.json())
+                raise NotImplementedError(f"{response.json()}")
+        except Exception as e:
+            print(
+                f"Error code = {e}",
+            )
+            raise e
 
     def _post(
         self,
@@ -233,3 +263,41 @@ class CryptoAPI:
             sign=True,
         )
         return OrderHistoryDataMessage.model_validate(response.result)
+
+    def get_candlesticks(self, instrument_name: str) -> list[Candlestick]:
+        response = self._get_public(
+            method=CryptoDotComMethodsEnum.PUBLIC_GET_CANDLESTICK,
+            params={
+                "instrument_name": instrument_name,
+            },
+        )
+        response_message = GetCandlestickDataMessage.model_validate(
+            response.result
+        )
+        result = [
+            Candlestick.model_validate(
+                {
+                    "open": item.o,
+                    "close": item.c,
+                    "high": item.h,
+                    "low": item.l,
+                    "volume": item.v,
+                    "interval": item.t,  # ms
+                    "symbol": {
+                        "base_currency": {"name": ""},
+                        "quote_currency": {
+                            "name": response_message.instrument_name,
+                        },
+                        "fee_currency": {
+                            "name": "",
+                        },
+                    },
+                    "interval_type": TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[  # noqa: E501
+                        response_message.interval
+                    ],
+                }
+            )
+            for item in response_message.data
+        ]
+        print(result)
+        return result

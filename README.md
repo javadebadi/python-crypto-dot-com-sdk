@@ -8,12 +8,21 @@ pip install python_crypto_dot_com_sdk
 
 ## Market
 
-### List all available market symbols
+### Get Candlestick Data
 ```python
-from crypto_dot_com.client import CryptoDotComMarketClient
+import json
+from crypto_dot_com.client import CryptoAPI
 
-client = CryptoDotComMarketClient(api_key="", api_secret="")
-client.list_all_available_market_symbols()
+
+client = CryptoAPI(
+    api_key=API_KEY,
+    api_secret=SECRET_KEY,
+    log_json_response_to_file=True,
+)
+
+kline_data = client.get_candlesticks("MTD_USD")
+with open("x.json", "w") as f:
+    json.dump([obj.model_dump() for obj in kline_data], f, indent=4)
 ```
 
 

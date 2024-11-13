@@ -28,6 +28,15 @@ class InternalTypedDict(TypedDict):
     sig: NotRequired[str]
 
 
+class CryptoDotComUrlBuilder:
+
+    def __init__(self, method: CryptoDotComMethodsEnum) -> None:
+        self.method = method
+
+    def build(self) -> str:
+        return ROOT_API_ENDPOINT + "/" + API_VERSION + "/" + self.method.value
+
+
 class CryptoDotComRequestBuilder:
 
     REQUEST_ID_MAX = 10000000
