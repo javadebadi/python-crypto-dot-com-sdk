@@ -1,6 +1,7 @@
 import datetime
 from typing import Any
 
+import pytz
 import requests
 from xarizmi.candlestick import Candlestick
 
@@ -11,6 +12,7 @@ from crypto_dot_com.data_models.crypto_dot_com import CryptoDotComResponseType
 from crypto_dot_com.data_models.request_message import CreateLimitOrderMessage
 from crypto_dot_com.data_models.response import GetCandlestickDataMessage
 from crypto_dot_com.enums import TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM
+from crypto_dot_com.enums import CandlestickTimeInterval
 from crypto_dot_com.enums import CryptoDotComMethodsEnum
 from crypto_dot_com.exceptions import BadPriceException
 from crypto_dot_com.exceptions import BadQuantityException
@@ -264,12 +266,26 @@ class CryptoAPI:
         )
         return OrderHistoryDataMessage.model_validate(response.result)
 
-    def get_candlesticks(self, instrument_name: str) -> list[Candlestick]:
+    def get_candlesticks(
+        self,
+        instrument_name: str,
+        count: int = 25,
+        timeframe: str = "1m",
+        start_ts: int | None = None,
+        end_ts: int | None = None,
+    ) -> list[Candlestick]:
+        params = {
+            "instrument_name": instrument_name,
+            "count": count,
+            "timeframe": CandlestickTimeInterval(timeframe).value,
+        }
+        if start_ts is not None:
+            params["start_ts"] = start_ts
+        if end_ts is not None:
+            params["end_ts"] = end_ts
         response = self._get_public(
             method=CryptoDotComMethodsEnum.PUBLIC_GET_CANDLESTICK,
-            params={
-                "instrument_name": instrument_name,
-            },
+            params=params,
         )
         response_message = GetCandlestickDataMessage.model_validate(
             response.result
@@ -295,6 +311,9 @@ class CryptoAPI:
                     "interval_type": TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[  # noqa: E501
                         response_message.interval
                     ],
+                    "datetime": datetime.datetime.fromtimestamp(
+                        item.t / 1000, tz=pytz.UTC
+                    ),
                 }
             )
             for item in response_message.data

@@ -52,7 +52,9 @@ python-dateutil==2.9.0.post0
     #   matplotlib
     #   pandas
 pytz==2024.2
-    # via pandas
+    # via
+    #   -r requirements.in
+    #   pandas
 requests==2.31.0
     # via -r requirements.in
 scipy==1.14.1

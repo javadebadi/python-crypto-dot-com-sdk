@@ -20,9 +20,9 @@ client = CryptoAPI(
     log_json_response_to_file=True,
 )
 
-kline_data = client.get_candlesticks("MTD_USD")
+kline_data = client.get_candlesticks("MTD_USD", count=100, timeframe='1M')
 with open("x.json", "w") as f:
-    json.dump([obj.model_dump() for obj in kline_data], f, indent=4)
+    json.dump([obj.model_dump() for obj in kline_data], f, indent=4, default=str)
 ```
 
 
