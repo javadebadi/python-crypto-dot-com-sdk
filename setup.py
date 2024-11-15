@@ -18,7 +18,10 @@ setup(
     name="python-crypto-dot-com-sdk",
     packages=find_packages(include=["crypto_dot_com", "crypto_dot_com.*"]),
     version=crypto_dot_com.__version__,
-    install_requires=["requests"],
+    install_requires=[
+        "requests",
+        "xarizmi",
+        ],
     python_requires=">=3.11",
     license="Apache 2.0",
     url="https://github.com/javadebadi/python-crypto-dot-com-sdk",
