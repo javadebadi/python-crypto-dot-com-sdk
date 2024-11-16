@@ -74,13 +74,13 @@ def test(ctx: Context) -> None:
 
 @task
 def build(ctx: Context) -> None:
-    ctx.run("python3 setup.py sdist bdist_wheel")
+    ctx.run("python3.12 setup.py sdist bdist_wheel")
     print("Finished build!")
 
 
 @task
 def deploy(ctx: Context) -> None:
-    ctx.run("twine upload dist/*")
+    ctx.run("python3.12 -m twine upload dist/*")
     print("Finished deploy!")
 
 
@@ -92,11 +92,12 @@ def freeze(ctx: Context) -> None:
 
 @task
 def install(ctx: Context) -> None:
-    ctx.run("pip-compile -r requirements.in")
-    ctx.run("pip-compile -r requirements_dev.in")
-    ctx.run("pip install -r requirements.txt")
-    ctx.run("pip install -r requirements_dev.txt")
-    ctx.run("pip freeze > requirements_lock.txt")
+    ctx.run("python3.12 -m pip install pip-tools")
+    # ctx.run("python3.12 -m pip-compile requirements.in")
+    # ctx.run("python3.12 -m pip-compile requirements_dev.in")
+    ctx.run("python3.12 -m pip install -r requirements.txt")
+    ctx.run("python3.12 -m pip install -r requirements_dev.txt")
+    ctx.run("python3.12 -m pip freeze > requirements_lock.txt")
     print("Installed python packages and freezed!")
 
 
