@@ -1,6 +1,7 @@
 import datetime
 from typing import Any
 
+import pandas as pd
 import pytz
 import requests
 from xarizmi.candlestick import Candlestick
@@ -11,6 +12,8 @@ from crypto_dot_com.data_models.crypto_dot_com import CryptoDotComErrorResponse
 from crypto_dot_com.data_models.crypto_dot_com import CryptoDotComResponseType
 from crypto_dot_com.data_models.request_message import CreateLimitOrderMessage
 from crypto_dot_com.data_models.response import GetCandlestickDataMessage
+from crypto_dot_com.data_models.response import GetUserBalanceDataMessage
+from crypto_dot_com.data_models.summary import UserBalanceSummary
 from crypto_dot_com.enums import TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM
 from crypto_dot_com.enums import CandlestickTimeInterval
 from crypto_dot_com.enums import CryptoDotComMethodsEnum
@@ -31,49 +34,20 @@ class CryptoAPI:
         api_secret: str,
         timeout: int = 1000,
         log_json_response_to_file: bool = False,
+        logs_directory: str | None = None,
     ) -> None:
         self._timeout = timeout
         self._base_url = ROOT_API_ENDPOINT + "/" + API_VERSION
         self.api_key = api_key
         self.api_secret = api_secret
         self.log_json_response_to_file = log_json_response_to_file
+        self.logs_directory = logs_directory
 
     def _get_headers(self, method: str) -> dict[str, str]:
         if method in ["POST", "DELETE"]:
             return {"Content-Type": "application/json"}
         else:
             return {}
-
-    # def _get(
-    #     self, url: str, params: dict[str, Any], sign: bool = False
-    # ) -> CryptDotComResponseType | CryptoDotComErrorResponse:
-    #     if sign is True:
-    #         params = self._create_signed_params(params)
-    #     data = urllib.parse.urlencode(params or {})
-    #     try:
-    #         response = requests.get(
-    #             url,
-    #             data,
-    #             headers=self._get_headers(method="GET"),
-    #             timeout=self._timeout,
-    #         )
-    #         if self.log_json_response_to_file is True:
-    #             log_json_response(response=response)
-    #         if response.ok:
-    #             response_data: CryptDotComResponseType = response.json()
-    #             return response_data
-    #         else:
-    #             error_response = CryptoDotComErrorResponse.model_validate(
-    #                 response.json()
-    #             )
-    #             print("Error code = ", response.status_code)
-    #             print("Error message = ", response.json())
-    #             raise RuntimeError(str(error_response))
-    #     except Exception as e:
-    #         print(
-    #             f"Error code = {e}",
-    #         )
-    #         raise e
 
     def _get_public(
         self,
@@ -85,7 +59,9 @@ class CryptoAPI:
                 CryptoDotComUrlBuilder(method=method).build(), params=params
             )
             if self.log_json_response_to_file is True:
-                log_json_response(response=response)
+                log_json_response(
+                    response=response, logs_directory=self.logs_directory
+                )
             if response.ok:
                 response_data: CryptoDotComResponseType = (
                     CryptoDotComResponseType.model_validate(response.json())
@@ -124,7 +100,9 @@ class CryptoAPI:
                 data=request_data["data"],
             )
             if self.log_json_response_to_file is True:
-                log_json_response(response=response)
+                log_json_response(
+                    response=response, logs_directory=self.logs_directory
+                )
             if response.ok:
                 response_data: CryptoDotComResponseType = (
                     CryptoDotComResponseType.model_validate(response.json())
@@ -320,3 +298,45 @@ class CryptoAPI:
         ]
         print(result)
         return result
+
+    def get_user_balance(self) -> list[GetUserBalanceDataMessage]:
+        response = self._post(
+            method=CryptoDotComMethodsEnum.PRIVATE_USER_BALANCE,
+            params={},
+            sign=True,
+        )
+        return [
+            GetUserBalanceDataMessage.model_validate(item)
+            for item in response.result["data"]  # type: ignore
+        ]
+
+    def get_user_balance_summary(self) -> list[UserBalanceSummary]:
+        user_balances = self.get_user_balance()[0]
+        if not user_balances:
+            return []
+        return [
+            UserBalanceSummary(
+                currency=item.instrument_name,
+                market_value=item.market_value,
+                quantity=item.quantity,
+            )
+            for item in user_balances.position_balances
+        ]
+
+    def get_user_balance_summary_as_df(
+        self,
+        include_portfolio_percentage: bool = True,
+        include_date: bool = True,
+    ) -> None | pd.DataFrame:
+        data = self.get_user_balance_summary()
+        if not data:
+            return None
+        df = pd.DataFrame(item.model_dump() for item in data)
+        df.sort_values(by="market_value", ascending=False, inplace=True)
+        if include_portfolio_percentage is True:
+            df["portfolio_percentage"] = (
+                df["market_value"] / sum(df["market_value"])
+            ).apply(lambda x: round(x, 3))
+        if include_date is True:
+            df["date"] = datetime.date.today()
+        return df

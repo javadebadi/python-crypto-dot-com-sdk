@@ -1,4 +1,5 @@
 import datetime
+import os
 import urllib
 import urllib.parse
 
@@ -19,10 +20,16 @@ URIS: dict[str, str] = {
 }
 
 
-def log_json_response(response: Response) -> None:
+def log_json_response(response: Response, logs_directory: None | str) -> None:
     data = response.json()
     url = urllib.parse.urlparse(response.request.url)
     path = str(url.path).replace("/", "-")
     time = datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S%f")
+    if logs_directory is not None:
+        filepath = os.path.join(
+            logs_directory, f"{time}-{path}-{response.status_code}.json"
+        )
+    else:
+        filepath = f"{time}-{path}-{response.status_code}.json"
     if data is not None:
-        json_to_file(data, f"{time}-{path}-{response.status_code}.json")
+        json_to_file(data, filepath)

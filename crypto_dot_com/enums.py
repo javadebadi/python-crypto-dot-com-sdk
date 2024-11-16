@@ -10,6 +10,7 @@ class CryptoDotComMethodsEnum(StrEnum):
     PRIVATE_CANCEL_ORDER = "private/cancel-order"
     PRIVATE_GET_ORDER_DETAILS = "private/get-order-detail"
     PUBLIC_GET_CANDLESTICK = "public/get-candlestick"
+    PRIVATE_USER_BALANCE = "private/user-balance"
 
 
 class SideEnum(StrEnum):

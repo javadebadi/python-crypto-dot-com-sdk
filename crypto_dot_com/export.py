@@ -5,6 +5,7 @@ import datetime
 import json
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import pandas
 
 from crypto_dot_com.client import CryptoAPI
@@ -100,3 +101,56 @@ def export_order_history(
     df.drop_duplicates(subset="order_id", keep="first", inplace=True)
     df.to_csv(filepath)
     return len(df)
+
+
+def export_user_balance(
+    api_key: str,
+    secret_key: str,
+    filepath: str | Path,
+    pie_chart_filepath: str | Path | None = None,
+    figsize: tuple[float | int, float | int] = (8, 8),
+    filter_values_in_pie_chart: float = 1.0,
+) -> None:
+    """Export user balance to give filepath
+
+    filter_values_in_pie_chart used to only consider currencies with bigger
+    than given market_value. By default it is 1 which means only the
+    currencies or categories with market value of greater than 1 USD will
+    be depicted in the graph.
+    """
+    if type(filepath) is str:
+        filepath = Path(filepath)
+    assert isinstance(filepath, Path)
+
+    client = CryptoAPI(
+        api_key=api_key,
+        api_secret=secret_key,
+        log_json_response_to_file=False,
+    )
+
+    df = client.get_user_balance_summary_as_df()
+    if df is not None:
+        df.to_csv(filepath, index=False)
+
+    if pie_chart_filepath is None:
+        return
+    if type(pie_chart_filepath) is str:
+        pie_chart_filepath = Path(filepath)
+    assert isinstance(pie_chart_filepath, Path)
+
+    portfolio = client.get_user_balance_summary()
+    currencies = [
+        item.currency for item in portfolio if item.market_value > 0.1
+    ]
+    market_values = [
+        item.market_value for item in portfolio if item.market_value > 0.1
+    ]
+
+    plt.figure(figsize=figsize)
+    plt.pie(
+        market_values, labels=currencies, autopct="%1.1f%%", startangle=140
+    )
+    plt.title("Portfolio Allocation")
+
+    # Save the chart to a file
+    plt.savefig(pie_chart_filepath, dpi=300)
