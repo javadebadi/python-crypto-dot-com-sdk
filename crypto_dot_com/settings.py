@@ -4,10 +4,12 @@ import urllib
 import urllib.parse
 
 from requests import Response
+from xarizmi.models.exchange import Exchange
 
 from crypto_dot_com.utils import json_to_file
 
 EXCHANGE_NAME: str = "crypto.com"
+EXCHANGE = Exchange(name=EXCHANGE_NAME)
 # ROOT_API_ENDPOINT: str = "https://api.crypto.com"
 ROOT_API_ENDPOINT: str = "https://api.crypto.com/exchange"
 API_VERSION: str = "v1"

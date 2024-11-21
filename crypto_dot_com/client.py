@@ -5,6 +5,9 @@ import pandas as pd
 import pytz
 import requests
 from xarizmi.candlestick import Candlestick
+from xarizmi.enums import IntervalTypeEnum
+from xarizmi.utils.datetools import get_current_time_miliseconds
+from xarizmi.utils.datetools import get_day_timestamps_nanoseconds
 
 from crypto_dot_com.data_models import CreateOrderDataMessage
 from crypto_dot_com.data_models import OrderHistoryDataMessage
@@ -22,9 +25,9 @@ from crypto_dot_com.exceptions import BadQuantityException
 from crypto_dot_com.request_builder import CryptoDotComRequestBuilder
 from crypto_dot_com.request_builder import CryptoDotComUrlBuilder
 from crypto_dot_com.settings import API_VERSION
+from crypto_dot_com.settings import EXCHANGE_NAME
 from crypto_dot_com.settings import ROOT_API_ENDPOINT
 from crypto_dot_com.settings import log_json_response
-from crypto_dot_com.utils import get_day_timestamps
 
 
 class CryptoAPI:
@@ -184,7 +187,7 @@ class CryptoAPI:
         day: datetime.date,
         instrument_name: str | None = None,
     ) -> list[OrderHistoryDataMessage]:
-        start_time, end_time = get_day_timestamps(
+        start_time, end_time = get_day_timestamps_nanoseconds(
             days_before=0, reference_date=day
         )
         return self.get_order_history(
@@ -286,6 +289,9 @@ class CryptoAPI:
                             "name": "",
                         },
                     },
+                    "exchange": {
+                        "name": EXCHANGE_NAME,
+                    },
                     "interval_type": TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[  # noqa: E501
                         response_message.interval
                     ],
@@ -296,8 +302,64 @@ class CryptoAPI:
             )
             for item in response_message.data
         ]
-        print(result)
         return result
+
+    def get_all_candlesticks(
+        self,
+        instrument_name: str,
+        interval: CandlestickTimeInterval | str,
+        n_steps: int = 300,
+        verbose: bool = True,
+    ) -> list[Candlestick]:
+
+        if type(interval) is str:
+            try:
+                interval = CandlestickTimeInterval[interval]
+            except KeyError:
+                try:
+                    interval = CandlestickTimeInterval(value=interval)
+                except ValueError:
+                    raise ValueError(
+                        f"the given interval '{interval}' is not valid!"
+                    )
+
+        xarizmi_interval = TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[
+            interval  # type: ignore
+        ]
+        interval_miliseconds = IntervalTypeEnum.get_interval_in_miliseconds(
+            xarizmi_interval
+        )
+
+        step = interval_miliseconds * n_steps  # type: ignore
+        current_time = get_current_time_miliseconds()
+        kline_data: list[Candlestick] = []
+        i = 0
+        while True:
+            end_ts = current_time - i * step
+            start_ts = end_ts - step
+            new_kline_data = self.get_candlesticks(
+                instrument_name=instrument_name,
+                count=n_steps,
+                timeframe=interval.value,  # type: ignore
+                start_ts=start_ts,
+                end_ts=end_ts,
+            )
+            if not new_kline_data:
+                break
+            else:
+                i += 1
+            kline_data += new_kline_data
+            if verbose is True:
+                print(
+                    f"{datetime.datetime.fromtimestamp(start_ts // 1000)} -> "
+                    f"{datetime.datetime.fromtimestamp(end_ts // 1000)}"
+                )
+                print(
+                    f"Number of current records in memory: {len(kline_data)}"
+                )
+                print("................................")
+
+        return kline_data
 
     def get_user_balance(self) -> list[GetUserBalanceDataMessage]:
         response = self._post(

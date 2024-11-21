@@ -6,10 +6,11 @@ from typing import Any
 from typing import NotRequired
 from typing import TypedDict
 
+from xarizmi.utils.datetools import get_current_time_miliseconds
+
 from crypto_dot_com.enums import CryptoDotComMethodsEnum
 from crypto_dot_com.settings import API_VERSION
 from crypto_dot_com.settings import ROOT_API_ENDPOINT
-from crypto_dot_com.utils import get_current_time_ms
 from crypto_dot_com.utils import sort_dict_by_key
 
 
@@ -59,7 +60,7 @@ class CryptoDotComRequestBuilder:
             "id": request_id,
             "method": method.value,
             "api_key": api_key,
-            "nonce": get_current_time_ms(),
+            "nonce": get_current_time_miliseconds(),
         }
         if params:
             self.req["params"] = params
