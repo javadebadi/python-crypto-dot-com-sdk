@@ -19,8 +19,10 @@ invoke tag           # Git tag with current version and push
 
 Run a single test:
 ```bash
-pytest tests/test_client.py::TestCryptoAPI::test_create_limit_order
+.venv/bin/pytest tests/test_client.py::TestCryptoAPI::test_create_limit_order
 ```
+
+> **Note:** Always use `.venv/bin/pytest` (not the system `pytest`) to ensure the correct Python 3.12 environment is used. The `.python-version` file pins the project to Python 3.12.
 
 ## Architecture
 
