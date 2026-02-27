@@ -1,23 +1,24 @@
 import datetime
-from typing import Any
-from typing import cast
+from typing import Any, cast
 
 import pytz
-from xarizmi.candlestick import Candlestick
-from xarizmi.candlestick import CandlestickChart
+from xarizmi.candlestick import Candlestick, CandlestickChart
 from xarizmi.config import get_config
-from xarizmi.db.actions.candlestick import get_filtered_candlesticks
-from xarizmi.db.actions.candlestick import upsert_candlestick
+from xarizmi.db.actions.candlestick import (
+    get_filtered_candlesticks,
+    upsert_candlestick,
+)
 from xarizmi.db.actions.exchange import upsert_exchange
-from xarizmi.db.actions.order import delete_all_cancelled_orders
-from xarizmi.db.actions.order import get_active_orders
-from xarizmi.db.actions.order import upsert_order
+from xarizmi.db.actions.order import (
+    delete_all_cancelled_orders,
+    get_active_orders,
+    upsert_order,
+)
 from xarizmi.db.actions.portfolio import bulk_upsert_portfolio_item
 from xarizmi.db.actions.portfolio.portfolio_read import (
     get_portfolio_items_between_dates,
 )
-from xarizmi.db.actions.symbol import get_symbol
-from xarizmi.db.actions.symbol import upsert_symbol
+from xarizmi.db.actions.symbol import get_symbol, upsert_symbol
 from xarizmi.db.admin import run_db_migration
 from xarizmi.db.client import session_scope
 from xarizmi.db.models.candlestick import CandleStick as DbCandlestick
@@ -26,15 +27,12 @@ from xarizmi.models.orders import Order
 from xarizmi.models.portfolio import Portfolio
 from xarizmi.models.symbol import Symbol
 
-from .client import CryptoAPI
-from .client import get_xarizmi_symbol_from_instrument_name
+from .client import CryptoAPI, get_xarizmi_symbol_from_instrument_name
 from .enums import CandlestickTimeInterval
-from .settings import EXCHANGE
-from .settings import EXCHANGE_NAME
+from .settings import EXCHANGE, EXCHANGE_NAME
 
 
 class CryptoDbApiClient(CryptoAPI):
-
     def __init__(
         self,
         database_url: str,
@@ -146,7 +144,6 @@ class CryptoDbApiClient(CryptoAPI):
         self.upsert_symbol(instrument_name=instrument_name)
         failed_to_downloads = []
         for year in range(datetime.datetime.today().year, start_year - 1, -1):
-
             for month in range(12, 0, -1):
                 try:
                     candlesticks = self.get_all_candlesticks(

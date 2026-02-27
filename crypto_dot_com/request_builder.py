@@ -2,15 +2,12 @@ import hashlib
 import hmac
 import json
 import random
-from typing import Any
-from typing import NotRequired
-from typing import TypedDict
+from typing import Any, NotRequired, TypedDict
 
 from xarizmi.utils.datetools import get_current_time_miliseconds
 
 from crypto_dot_com.enums import CryptoDotComMethodsEnum
-from crypto_dot_com.settings import API_VERSION
-from crypto_dot_com.settings import ROOT_API_ENDPOINT
+from crypto_dot_com.settings import API_VERSION, ROOT_API_ENDPOINT
 from crypto_dot_com.utils import sort_dict_by_key
 
 
@@ -30,7 +27,6 @@ class InternalTypedDict(TypedDict):
 
 
 class CryptoDotComUrlBuilder:
-
     def __init__(self, method: CryptoDotComMethodsEnum) -> None:
         self.method = method
 
@@ -39,7 +35,6 @@ class CryptoDotComUrlBuilder:
 
 
 class CryptoDotComRequestBuilder:
-
     REQUEST_ID_MAX = 10000000
     MAX_LEVEL = 3
 

@@ -29,8 +29,14 @@ jobs:
           uv venv --python=${{ matrix.python-version }}
           uv sync --all-groups
 
+      - name: Autoformat
+        run: uv run invoke code.autoformat
+
       - name: Lint
-        run: uv run invoke lint
+        run: uv run invoke code.check
+
+      - name: Type check
+        run: uv run invoke code.mypy
 
       - name: Test
-        run: uv run invoke test
+        run: uv run invoke code.test

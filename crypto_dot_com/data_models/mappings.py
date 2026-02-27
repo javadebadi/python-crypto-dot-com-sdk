@@ -1,7 +1,5 @@
 from crypto_dot_com.data_models.crypto_dot_com import (
     AvailableMarketSymbolInfoResponse,
-)
-from crypto_dot_com.data_models.crypto_dot_com import (
     ListAllAvailableMarketSymbolsResponse,
 )
 from crypto_dot_com.data_models.standard import SymbolSummaryInfo

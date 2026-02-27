@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
-from crypto_dot_com.enums import OrderTypeEnum
-from crypto_dot_com.enums import SideEnum
+from crypto_dot_com.enums import OrderTypeEnum, SideEnum
 
 
 class CreateOrderMessage(BaseModel):

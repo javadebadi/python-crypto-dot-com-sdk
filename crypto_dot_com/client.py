@@ -5,35 +5,45 @@ import pandas as pd
 import pytz
 import requests
 from xarizmi.candlestick import Candlestick
-from xarizmi.enums import IntervalTypeEnum
-from xarizmi.enums import OrderStatusEnum
-from xarizmi.enums import SideEnum
+from xarizmi.enums import IntervalTypeEnum, OrderStatusEnum, SideEnum
 from xarizmi.models import Symbol
 from xarizmi.models.orders import Order
-from xarizmi.models.portfolio import Portfolio
-from xarizmi.models.portfolio import PortfolioItem
-from xarizmi.utils.datetools import get_current_time_miliseconds
-from xarizmi.utils.datetools import get_day_timestamps_nanoseconds
+from xarizmi.models.portfolio import Portfolio, PortfolioItem
+from xarizmi.utils.datetools import (
+    get_current_time_miliseconds,
+    get_day_timestamps_nanoseconds,
+)
 
-from crypto_dot_com.data_models import CreateOrderDataMessage
-from crypto_dot_com.data_models import OrderHistoryDataMessage
-from crypto_dot_com.data_models.crypto_dot_com import CryptoDotComErrorResponse
-from crypto_dot_com.data_models.crypto_dot_com import CryptoDotComResponseType
+from crypto_dot_com.data_models import (
+    CreateOrderDataMessage,
+    OrderHistoryDataMessage,
+)
+from crypto_dot_com.data_models.crypto_dot_com import (
+    CryptoDotComErrorResponse,
+    CryptoDotComResponseType,
+)
 from crypto_dot_com.data_models.request_message import CreateLimitOrderMessage
-from crypto_dot_com.data_models.response import GetCandlestickDataMessage
-from crypto_dot_com.data_models.response import GetUserBalanceDataMessage
-from crypto_dot_com.data_models.response import TradeHistoryDataMessage
-from crypto_dot_com.enums import TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM
-from crypto_dot_com.enums import CandlestickTimeInterval
-from crypto_dot_com.enums import CryptoDotComMethodsEnum
-from crypto_dot_com.exceptions import BadPriceException
-from crypto_dot_com.exceptions import BadQuantityException
-from crypto_dot_com.request_builder import CryptoDotComRequestBuilder
-from crypto_dot_com.request_builder import CryptoDotComUrlBuilder
-from crypto_dot_com.settings import API_VERSION
-from crypto_dot_com.settings import EXCHANGE_NAME
-from crypto_dot_com.settings import ROOT_API_ENDPOINT
-from crypto_dot_com.settings import log_json_response
+from crypto_dot_com.data_models.response import (
+    GetCandlestickDataMessage,
+    GetUserBalanceDataMessage,
+    TradeHistoryDataMessage,
+)
+from crypto_dot_com.enums import (
+    TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM,
+    CandlestickTimeInterval,
+    CryptoDotComMethodsEnum,
+)
+from crypto_dot_com.exceptions import BadPriceException, BadQuantityException
+from crypto_dot_com.request_builder import (
+    CryptoDotComRequestBuilder,
+    CryptoDotComUrlBuilder,
+)
+from crypto_dot_com.settings import (
+    API_VERSION,
+    EXCHANGE_NAME,
+    ROOT_API_ENDPOINT,
+    log_json_response,
+)
 
 
 def get_xarizmi_symbol_from_instrument_name(instrument_name: str) -> Symbol:
@@ -442,7 +452,6 @@ class CryptoAPI:
         max_datetime: datetime.datetime | None = None,
         verbose: bool = True,
     ) -> list[Candlestick]:
-
         if type(interval) is str:
             try:
                 interval = CandlestickTimeInterval[interval]

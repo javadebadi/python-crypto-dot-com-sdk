@@ -61,18 +61,19 @@ import pathlib
 from pathlib import Path
 from typing import Any
 from unittest import mock
-from unittest.mock import MagicMock
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pandas
 import pytest
 
 from crypto_dot_com.data_models.order_history import OrderHistoryDataMessage
 from crypto_dot_com.enums import StatusEnum
-from crypto_dot_com.export import export_order_history
-from crypto_dot_com.export import export_trades_history
-from crypto_dot_com.export import export_user_balance
-from crypto_dot_com.export import read_order_history_from_csv
+from crypto_dot_com.export import (
+    export_order_history,
+    export_trades_history,
+    export_user_balance,
+    read_order_history_from_csv,
+)
 
 # ---------------------------------------------------------------------------
 # Fixture loader (mirrors test_client_real_responses.py)
@@ -236,7 +237,8 @@ class TestReadOrderHistoryFromCsv:
 
     def test_return_type_case_insensitive(self, orders_csv: Path) -> None:
         result = read_order_history_from_csv(
-            orders_csv, return_type="DataFrame"  # type: ignore[arg-type]
+            orders_csv,
+            return_type="DataFrame",  # type: ignore[arg-type]
         )
         assert isinstance(result, pandas.DataFrame)
 

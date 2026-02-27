@@ -4,17 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-Dependencies are managed with [uv](https://docs.astral.sh/uv/). Tasks are run via [invoke](https://www.pyinvoke.org/) (`tasks.py`):
+Dependencies are managed with [uv](https://docs.astral.sh/uv/). Tasks are run via [invoke](https://www.pyinvoke.org/) (`tasks/`):
 
 ```bash
-invoke install       # uv sync --all-groups (install all deps including dev)
-invoke lock          # uv lock (update uv.lock)
-invoke test          # Run all tests with pytest
-invoke lint          # Run autoflake, isort, mypy, flake8, black --check
-invoke autoformat    # Run autoflake, isort, black (in-place)
-invoke build         # uv build (sdist + wheel)
-invoke deploy        # uv publish
-invoke tag           # Git tag with current version and push
+uv sync --all-groups          # install all deps including dev
+
+invoke code.autoformat        # ruff format + ruff check --fix (in-place)
+invoke code.check             # ruff format --diff + ruff check (CI-safe)
+invoke code.mypy              # mypy type checking
+invoke code.test              # pytest
+invoke code.coverage          # pytest --cov + HTML report
+invoke code.ci                # autoformat + check + ty + mypy + complexity + test
+
+invoke code.security          # bandit + pip-audit
+invoke code.complexity        # radon cyclomatic complexity
+invoke code.deadcode          # vulture dead code detection
+invoke code.docstrings        # interrogate docstring coverage
+invoke code.duplication       # pylint duplicate-code detection
+invoke code.clean             # remove .mypy_cache, .pytest_cache, etc.
 ```
 
 Run a single test:
@@ -65,8 +72,7 @@ High-level functions for downloading and persisting data to CSV/charts without n
 
 Base URL (`https://api.crypto.com/exchange/v1`), exchange name (`crypto.com`), and the `log_json_response()` helper for optional request/response logging to JSON files.
 
-### Linting configuration (`setup.cfg`)
+### Linting configuration
 
-- max line length: 79
-- isort profile: black
-- mypy: strict mode, pydantic plugin enabled; xarizmi imports are ignored for type checking
+- `pyproject.toml` `[tool.ruff]` — line length 79, rules E/F/I (pycodestyle, pyflakes, isort)
+- `setup.cfg` `[mypy]` — strict mode, pydantic plugin enabled; xarizmi imports are ignored for type checking

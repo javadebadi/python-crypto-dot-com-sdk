@@ -1,14 +1,15 @@
 import datetime
 import json
 
-from pydantic import BaseModel
-from pydantic import field_validator
+from pydantic import BaseModel, field_validator
 from xarizmi.enums import SideEnum
 
-from crypto_dot_com.enums import ExecInstEnum
-from crypto_dot_com.enums import OrderTypeEnum
-from crypto_dot_com.enums import StatusEnum
-from crypto_dot_com.enums import TimeInForceEnum
+from crypto_dot_com.enums import (
+    ExecInstEnum,
+    OrderTypeEnum,
+    StatusEnum,
+    TimeInForceEnum,
+)
 
 
 class OrderHistoryDataMessage(BaseModel):

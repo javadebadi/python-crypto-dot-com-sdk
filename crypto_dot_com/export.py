@@ -59,7 +59,7 @@ Then load for offline analysis::
 import datetime
 import json
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import matplotlib.pyplot as plt
 import pandas
@@ -140,16 +140,17 @@ def read_order_history_from_csv(
         records = df.to_dict(orient="records")
         # pandas reads missing optional fields as float NaN; normalise to None
         # so that pydantic accepts them for str | None fields.
-        clean_records = [
+        clean_records: list[dict[str, Any]] = [
             {
-                k: (None if isinstance(v, float) and pandas.isna(v) else v)
+                str(k): (
+                    None if isinstance(v, float) and pandas.isna(v) else v
+                )
                 for k, v in row.items()
             }
             for row in records
         ]
         data: list[OrderHistoryDataMessage] = [
-            OrderHistoryDataMessage(**row)  # type: ignore
-            for row in clean_records
+            OrderHistoryDataMessage(**row) for row in clean_records
         ]
         return data
     elif return_type.lower() == "dataframe":

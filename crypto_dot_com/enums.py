@@ -1,7 +1,6 @@
 from enum import StrEnum
 
-from xarizmi.enums import IntervalTypeEnum
-from xarizmi.enums import OrderStatusEnum
+from xarizmi.enums import IntervalTypeEnum, OrderStatusEnum
 
 
 class CryptoDotComMethodsEnum(StrEnum):

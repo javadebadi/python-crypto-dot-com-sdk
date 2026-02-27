@@ -35,17 +35,18 @@ TestTimeIntervalMapping         The lookup dict that converts
 """
 
 import pytest
-from xarizmi.enums import IntervalTypeEnum
-from xarizmi.enums import OrderStatusEnum
+from xarizmi.enums import IntervalTypeEnum, OrderStatusEnum
 
-from crypto_dot_com.enums import TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM
-from crypto_dot_com.enums import CandlestickTimeInterval
-from crypto_dot_com.enums import CryptoDotComMethodsEnum
-from crypto_dot_com.enums import ExecInstEnum
-from crypto_dot_com.enums import OrderTypeEnum
-from crypto_dot_com.enums import SideEnum
-from crypto_dot_com.enums import StatusEnum
-from crypto_dot_com.enums import TimeInForceEnum
+from crypto_dot_com.enums import (
+    TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM,
+    CandlestickTimeInterval,
+    CryptoDotComMethodsEnum,
+    ExecInstEnum,
+    OrderTypeEnum,
+    SideEnum,
+    StatusEnum,
+    TimeInForceEnum,
+)
 
 # ---------------------------------------------------------------------------
 # TestCryptoDotComMethodsEnum
@@ -369,9 +370,9 @@ class TestTimeIntervalMapping:
     def test_every_interval_has_a_mapping(self) -> None:
         """No CandlestickTimeInterval member may be absent from the dict."""
         for interval in CandlestickTimeInterval:
-            assert (
-                interval in TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM
-            ), f"{interval!r} is missing from the interval mapping"
+            assert interval in TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM, (
+                f"{interval!r} is missing from the interval mapping"
+            )
 
     def test_mapping_has_no_extra_keys(self) -> None:
         """The dict must not contain keys that are not valid intervals."""

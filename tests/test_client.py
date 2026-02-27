@@ -61,15 +61,15 @@ from unittest import mock
 
 import pytest
 import pytz
-from xarizmi.enums import OrderStatusEnum
-from xarizmi.enums import SideEnum
+from xarizmi.enums import OrderStatusEnum, SideEnum
 
-from crypto_dot_com.client import CryptoAPI
-from crypto_dot_com.client import get_xarizmi_symbol_from_instrument_name
+from crypto_dot_com.client import (
+    CryptoAPI,
+    get_xarizmi_symbol_from_instrument_name,
+)
 from crypto_dot_com.data_models.response import CreateOrderDataMessage
 from crypto_dot_com.enums import CandlestickTimeInterval
-from crypto_dot_com.exceptions import BadPriceException
-from crypto_dot_com.exceptions import BadQuantityException
+from crypto_dot_com.exceptions import BadPriceException, BadQuantityException
 
 # ---------------------------------------------------------------------------
 # Mock infrastructure

@@ -14,7 +14,7 @@ class CreateOrderDataMessage(BaseModel):
 class CryptoDotComeCandlestick(BaseModel):
     o: float  # open price
     h: float  # high price
-    l: float  # low price
+    l: float  # noqa: E741  # low price
     c: float  # close price
     v: float  # volume
     t: int  # timestamp in ms
