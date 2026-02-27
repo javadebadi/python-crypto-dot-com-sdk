@@ -3,10 +3,10 @@ import json
 
 from pydantic import BaseModel
 from pydantic import field_validator
+from xarizmi.enums import SideEnum
 
 from crypto_dot_com.enums import ExecInstEnum
 from crypto_dot_com.enums import OrderTypeEnum
-from crypto_dot_com.enums import SideEnum
 from crypto_dot_com.enums import StatusEnum
 from crypto_dot_com.enums import TimeInForceEnum
 

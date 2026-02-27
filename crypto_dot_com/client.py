@@ -6,6 +6,12 @@ import pytz
 import requests
 from xarizmi.candlestick import Candlestick
 from xarizmi.enums import IntervalTypeEnum
+from xarizmi.enums import OrderStatusEnum
+from xarizmi.enums import SideEnum
+from xarizmi.models import Symbol
+from xarizmi.models.orders import Order
+from xarizmi.models.portfolio import Portfolio
+from xarizmi.models.portfolio import PortfolioItem
 from xarizmi.utils.datetools import get_current_time_miliseconds
 from xarizmi.utils.datetools import get_day_timestamps_nanoseconds
 
@@ -16,7 +22,6 @@ from crypto_dot_com.data_models.crypto_dot_com import CryptoDotComResponseType
 from crypto_dot_com.data_models.request_message import CreateLimitOrderMessage
 from crypto_dot_com.data_models.response import GetCandlestickDataMessage
 from crypto_dot_com.data_models.response import GetUserBalanceDataMessage
-from crypto_dot_com.data_models.summary import UserBalanceSummary
 from crypto_dot_com.enums import TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM
 from crypto_dot_com.enums import CandlestickTimeInterval
 from crypto_dot_com.enums import CryptoDotComMethodsEnum
@@ -28,6 +33,16 @@ from crypto_dot_com.settings import API_VERSION
 from crypto_dot_com.settings import EXCHANGE_NAME
 from crypto_dot_com.settings import ROOT_API_ENDPOINT
 from crypto_dot_com.settings import log_json_response
+
+
+def get_xarizmi_symbol_from_instrument_name(instrument_name: str) -> Symbol:
+    base, quote = instrument_name.split("_")
+    return Symbol.build(
+        base_currency=base,
+        quote_currency=quote,
+        fee_currency="",
+        exchange=EXCHANGE_NAME,
+    )
 
 
 class CryptoAPI:
@@ -218,6 +233,48 @@ class CryptoAPI:
         )
         return CreateOrderDataMessage.model_validate(response.result)
 
+    def create_buy_limit_order_xarizmi(
+        self,
+        instrument_name: str,
+        quantity: str | float,
+        price: str | float,
+    ) -> Order:
+        order = self.create_limit_order(
+            instrument_name=instrument_name,
+            quantity=quantity,
+            side=SideEnum.BUY.name,
+            price=price,
+        )
+        return Order(
+            order_id=order.order_id,
+            symbol=get_xarizmi_symbol_from_instrument_name(instrument_name),
+            price=price,
+            amount=quantity,
+            status=OrderStatusEnum.ACTIVE,
+            side=SideEnum.BUY,
+        )
+
+    def create_sell_limit_order_xarizmi(
+        self,
+        instrument_name: str,
+        quantity: str | float,
+        price: str | float,
+    ) -> Order:
+        order = self.create_limit_order(
+            instrument_name=instrument_name,
+            quantity=quantity,
+            side=SideEnum.SELL.name,
+            price=price,
+        )
+        return Order(
+            order_id=order.order_id,
+            symbol=get_xarizmi_symbol_from_instrument_name(instrument_name),
+            price=price,
+            amount=quantity,
+            status=OrderStatusEnum.ACTIVE,
+            side=SideEnum.SELL,
+        )
+
     def cancel_all_orders(self, instrument_name: str | None = None) -> None:
         """Method is asynchronous and only sends the confirmation"""
         self._post(
@@ -246,6 +303,19 @@ class CryptoAPI:
             sign=True,
         )
         return OrderHistoryDataMessage.model_validate(response.result)
+
+    def get_order_details_in_xarizmi(self, order_id: str) -> Order:
+        order = self.get_order_details(order_id=order_id)
+        return Order(
+            order_id=order.order_id,
+            symbol=get_xarizmi_symbol_from_instrument_name(
+                order.instrument_name
+            ),
+            price=order.order_value / order.quantity,
+            amount=order.quantity,
+            status=order.status.to_xarizmi_status(),
+            side=SideEnum[order.side],
+        )
 
     def get_candlesticks(
         self,
@@ -309,6 +379,8 @@ class CryptoAPI:
         instrument_name: str,
         interval: CandlestickTimeInterval | str,
         n_steps: int = 300,
+        min_datetime: datetime.datetime | None = None,
+        max_datetime: datetime.datetime | None = None,
         verbose: bool = True,
     ) -> list[Candlestick]:
 
@@ -330,13 +402,23 @@ class CryptoAPI:
             xarizmi_interval
         )
 
-        step = interval_miliseconds * n_steps  # type: ignore
+        step = interval_miliseconds * n_steps
         current_time = get_current_time_miliseconds()
         kline_data: list[Candlestick] = []
         i = 0
+        min_timestamp = None
+        max_timestamp = None
+        if min_datetime is not None:
+            min_timestamp = int(min_datetime.timestamp() * 1000)
+        if max_datetime is not None:
+            max_timestamp = int(max_datetime.timestamp() * 1000)
+            current_time = min(max_timestamp, current_time)
+
         while True:
             end_ts = current_time - i * step
             start_ts = end_ts - step
+            if min_timestamp is not None and end_ts < min_timestamp:
+                break
             new_kline_data = self.get_candlesticks(
                 instrument_name=instrument_name,
                 count=n_steps,
@@ -355,7 +437,7 @@ class CryptoAPI:
                     f"{datetime.datetime.fromtimestamp(end_ts // 1000)}"
                 )
                 print(
-                    f"Number of current records in memory: {len(kline_data)}"
+                    f"{instrument_name} - Number of current records in memory: {len(kline_data)}"
                 )
                 print("................................")
 
@@ -372,18 +454,36 @@ class CryptoAPI:
             for item in response.result["data"]  # type: ignore
         ]
 
-    def get_user_balance_summary(self) -> list[UserBalanceSummary]:
+    def get_user_balance_summary(self) -> list[PortfolioItem]:
         user_balances = self.get_user_balance()[0]
         if not user_balances:
             return []
+        d = datetime.datetime.now(tz=pytz.UTC)
         return [
-            UserBalanceSummary(
-                currency=item.instrument_name,
+            PortfolioItem(
+                symbol=Symbol.model_validate(
+                    {
+                        "base_currency": {
+                            "name": item.instrument_name,
+                        },
+                        "quote_currency": {
+                            "name": "USD",
+                        },
+                        "fee_currency": {
+                            "name": "",
+                        },
+                        "exchange": {"name": EXCHANGE_NAME},
+                    }
+                ),
                 market_value=item.market_value,
                 quantity=item.quantity,
+                datetime=d,
             )
             for item in user_balances.position_balances
         ]
+
+    def get_current_portfolio(self) -> Portfolio:
+        return Portfolio(items=self.get_user_balance_summary())
 
     def get_user_balance_summary_as_df(
         self,
@@ -394,6 +494,8 @@ class CryptoAPI:
         if not data:
             return None
         df = pd.DataFrame(item.model_dump() for item in data)
+        df["exchange"] = df["symbol"].apply(lambda x: x["exchange"]["name"])
+        df["symbol"] = df["symbol"].apply(lambda x: x["base_currency"]["name"])
         df.sort_values(by="market_value", ascending=False, inplace=True)
         if include_portfolio_percentage is True:
             df["portfolio_percentage"] = (

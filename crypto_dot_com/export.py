@@ -140,7 +140,9 @@ def export_user_balance(
 
     portfolio = client.get_user_balance_summary()
     currencies = [
-        item.currency for item in portfolio if item.market_value > 0.1
+        item.symbol.base_currency.name
+        for item in portfolio
+        if item.market_value > 0.1
     ]
     market_values = [
         item.market_value for item in portfolio if item.market_value > 0.1

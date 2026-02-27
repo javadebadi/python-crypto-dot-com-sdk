@@ -1,6 +1,7 @@
 from enum import StrEnum
 
 from xarizmi.enums import IntervalTypeEnum
+from xarizmi.enums import OrderStatusEnum
 
 
 class CryptoDotComMethodsEnum(StrEnum):
@@ -44,6 +45,23 @@ class StatusEnum(StrEnum):
     FILLED = "FILLED"
     EXPIRED = "EXPIRED"
     ACTIVE = "ACTIVE"
+
+    def to_xarizmi_status(
+        self,
+    ) -> OrderStatusEnum:
+        match self:
+            case StatusEnum.REJECTED:
+                return OrderStatusEnum.CANCELLED
+            case StatusEnum.CANCELED:
+                return OrderStatusEnum.CANCELLED
+            case StatusEnum.FILLED:
+                return OrderStatusEnum.DONE
+            case StatusEnum.EXPIRED:
+                return OrderStatusEnum.CANCELLED
+            case StatusEnum.ACTIVE:
+                return OrderStatusEnum.ACTIVE
+            case _:
+                raise RuntimeError("New crypto dot com status value")
 
 
 class CandlestickTimeInterval(StrEnum):
