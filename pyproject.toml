@@ -15,7 +15,7 @@ dependencies = [
     "requests>=2.31.0",
     "pandas-stubs",
     "pandas",
-    "xarizmi>=0.13.0",
+    "xarizmi>=0.17.0",
     "mplfinance",
     "scipy",
     "pytz",

@@ -1477,7 +1477,7 @@ requires-dist = [
     { name = "pytz" },
     { name = "requests", specifier = ">=2.31.0" },
     { name = "scipy" },
-    { name = "xarizmi", specifier = ">=0.13.0" },
+    { name = "xarizmi", specifier = ">=0.17.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -1853,7 +1853,7 @@ wheels = [
 
 [[package]]
 name = "xarizmi"
-version = "0.13.0"
+version = "0.17.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "alembic" },
@@ -1867,9 +1867,9 @@ dependencies = [
     { name = "ta-lib" },
     { name = "yfinance" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f0/58/f779d4b065ac6839bbb27507900cdd9df0bd5a7426feaea43277fc439b80/xarizmi-0.13.0.tar.gz", hash = "sha256:6fb7b9547a7c779c03b5c75f1f6013ed1dfa83261e6b5a92204428f18dfd2813", size = 45899, upload-time = "2026-02-27T07:16:03.236Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b6/e9/09d4394c3ad39955081274d0a1c41c771d7b5827908bb1b2aa622a802644/xarizmi-0.17.0.tar.gz", hash = "sha256:72d60fbf8d9477c938e37250af4b9e9b3bfe678eb6bcca20565923a9a0642ee3", size = 47662, upload-time = "2026-02-27T13:56:20.993Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6c/78/a95f45cceba8452aacaaa2e8fe84b01d6019e50b4dcf97b1104df8a8cc6c/xarizmi-0.13.0-py3-none-any.whl", hash = "sha256:293dbc92ae4b4f6dc3ff5673d0347ea642553bb2762e7866ba12a653144ae830", size = 63386, upload-time = "2026-02-27T07:16:02.032Z" },
+    { url = "https://files.pythonhosted.org/packages/58/70/0d88d611f146d4a21b39afd99a7ae6f68d63497cbe42dc1b05318da97d23/xarizmi-0.17.0-py3-none-any.whl", hash = "sha256:16ca5437885cb3f9e97aba850762cba2f73c14393e38f43a2a827bfe84ab1c29", size = 66572, upload-time = "2026-02-27T13:56:19.672Z" },
 ]
 
 [[package]]
