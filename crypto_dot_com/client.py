@@ -22,6 +22,7 @@ from crypto_dot_com.data_models.crypto_dot_com import CryptoDotComResponseType
 from crypto_dot_com.data_models.request_message import CreateLimitOrderMessage
 from crypto_dot_com.data_models.response import GetCandlestickDataMessage
 from crypto_dot_com.data_models.response import GetUserBalanceDataMessage
+from crypto_dot_com.data_models.response import TradeHistoryDataMessage
 from crypto_dot_com.enums import TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM
 from crypto_dot_com.enums import CandlestickTimeInterval
 from crypto_dot_com.enums import CryptoDotComMethodsEnum
@@ -197,6 +198,50 @@ class CryptoAPI:
                 limit=limit,
             )
 
+    def get_trades(
+        self,
+        start_time: int,
+        end_time: int,
+        limit: int = 100,  # MAX and default per API
+        instrument_name: str | None = None,
+    ) -> list[TradeHistoryDataMessage]:
+        """
+        Returns executed trades (fills) between start_time and end_time.
+        """
+
+        response = self._post(
+            method=CryptoDotComMethodsEnum.PRIVATE_GET_TRADES,
+            params={
+                "instrument_name": instrument_name,
+                "start_time": start_time,
+                "end_time": end_time,
+                "limit": limit,
+            },
+            sign=True,
+        )
+
+        data = response.result["data"]  # type: ignore
+
+        if len(data) < limit:
+            return [
+                TradeHistoryDataMessage.model_validate(item) for item in data
+            ]
+        else:
+            # If limit hit, split time range recursively
+            mid_time = (start_time + end_time) // 2
+
+            return self.get_trades(
+                instrument_name=instrument_name,
+                start_time=start_time,
+                end_time=mid_time + 1,
+                limit=limit,
+            ) + self.get_trades(
+                instrument_name=instrument_name,
+                start_time=mid_time,
+                end_time=end_time,
+                limit=limit,
+            )
+
     def get_all_order_history_of_a_day(
         self,
         day: datetime.date,
@@ -206,6 +251,20 @@ class CryptoAPI:
             days_before=0, reference_date=day
         )
         return self.get_order_history(
+            start_time=start_time,
+            end_time=end_time,
+            instrument_name=instrument_name,
+        )
+
+    def get_all_trade_history_of_a_day(
+        self,
+        day: datetime.date,
+        instrument_name: str | None = None,
+    ) -> list[TradeHistoryDataMessage]:
+        start_time, end_time = get_day_timestamps_nanoseconds(
+            days_before=0, reference_date=day
+        )
+        return self.get_trades(
             start_time=start_time,
             end_time=end_time,
             instrument_name=instrument_name,
@@ -437,7 +496,8 @@ class CryptoAPI:
                     f"{datetime.datetime.fromtimestamp(end_ts // 1000)}"
                 )
                 print(
-                    f"{instrument_name} - Number of current records in memory: {len(kline_data)}"
+                    f"{instrument_name} - Number of current"
+                    f" records in memory: {len(kline_data)}"
                 )
                 print("................................")
 

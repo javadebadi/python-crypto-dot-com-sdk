@@ -204,7 +204,8 @@ def _post_ok(result: Any, method: str = "private/test") -> MockResponse:
 
 
 def _get_ok(result: Any, method: str = "public/test") -> MockResponse:
-    """Wrap *result* in a successful (HTTP 200) public GET response envelope."""
+    """Wrap *result* in a successful (HTTP 200) public GET response
+    envelope."""
     return MockResponse(
         {"id": 1, "method": method, "code": 0, "result": result}
     )
@@ -235,7 +236,7 @@ def client() -> CryptoAPI:
 
 
 class TestGetXarizmiSymbol:
-    """Tests for the module-level get_xarizmi_symbol_from_instrument_name helper.
+    """Tests for get_xarizmi_symbol_from_instrument_name.
 
     This function splits a crypto.com instrument name (e.g. "BTC_USD") into
     its base and quote currencies and builds a xarizmi Symbol.
@@ -251,6 +252,7 @@ class TestGetXarizmiSymbol:
 
     def test_exchange_name_is_crypto_dot_com(self) -> None:
         symbol = get_xarizmi_symbol_from_instrument_name("ETH_USDT")
+        assert symbol.exchange is not None
         assert symbol.exchange.name == "crypto.com"
 
     def test_works_with_various_pairs(self) -> None:
@@ -706,8 +708,8 @@ class TestGetCandlesticks:
         dummy = mock.MagicMock()
         mock_get_candles.side_effect = [
             [dummy, dummy],  # first window – two candles
-            [dummy],         # second window – one candle
-            [],              # third window – empty → stop
+            [dummy],  # second window – one candle
+            [],  # third window – empty → stop
         ]
 
         result = client.get_all_candlesticks(
@@ -786,13 +788,13 @@ class TestGetCandlesticks:
 
         result = client.get_all_candlesticks(
             "BTC_USD",
-            interval=CandlestickTimeInterval.HOUR_1,  # 300-hour step > 1-day window
+            interval=CandlestickTimeInterval.HOUR_1,  # step > 1-day window
             min_datetime=min_dt,
             max_datetime=max_dt,
             verbose=False,
         )
 
-        # Loop ran once (i=0) → found one candle; on i=1 end_ts < min_ts → stop.
+        # Loop ran once (i=0): found one candle; i=1 end_ts < min_ts.
         assert len(result) == 1
 
 
@@ -849,7 +851,9 @@ class TestGetUserBalance:
 
         items = client.get_user_balance_summary()
 
-        market_values = {item.symbol.base_currency.name: item.market_value for item in items}
+        market_values = {
+            item.symbol.base_currency.name: item.market_value for item in items
+        }
         assert market_values["BTC"] == 25000.0
         assert market_values["ETH"] == 3000.0
 
@@ -889,7 +893,13 @@ class TestGetUserBalanceSummaryAsDf:
         df = client.get_user_balance_summary_as_df()
 
         assert df is not None
-        for col in ("symbol", "market_value", "exchange", "portfolio_percentage", "date"):
+        for col in (
+            "symbol",
+            "market_value",
+            "exchange",
+            "portfolio_percentage",
+            "date",
+        ):
             assert col in df.columns, f"Missing column: {col}"
 
     @mock.patch("requests.post")

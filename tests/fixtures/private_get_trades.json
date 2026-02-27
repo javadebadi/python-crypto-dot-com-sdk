@@ -1,0 +1,69 @@
+{
+    "id": 7976652,
+    "method": "private/get-trades",
+    "code": 0,
+    "result": {
+        "data": [
+            {
+                "account_id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                "event_date": "2026-02-26",
+                "journal_type": "TRADING",
+                "side": "SELL",
+                "instrument_name": "LINK_USD",
+                "fees": "-16.57345385",
+                "trade_id": "5755600643031727273",
+                "trade_match_id": "4611686018453273865",
+                "create_time": 1772092422307,
+                "traded_price": "9.197",
+                "traded_quantity": "360.41",
+                "fee_instrument_name": "USD",
+                "client_oid": "1772092422000",
+                "taker_side": "TAKER",
+                "order_id": "5755600484986643139",
+                "match_count": 2,
+                "create_time_ns": "1772092422307240761",
+                "transact_time_ns": "1772092422306935097"
+            },
+            {
+                "account_id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                "event_date": "2026-02-26",
+                "journal_type": "TRADING",
+                "side": "SELL",
+                "instrument_name": "LINK_USD",
+                "fees": "-6.05136420",
+                "trade_id": "5755600643031727270",
+                "trade_match_id": "4611686018453273864",
+                "create_time": 1772092422307,
+                "traded_price": "9.198",
+                "traded_quantity": "131.58",
+                "fee_instrument_name": "USD",
+                "client_oid": "1772092422000",
+                "taker_side": "TAKER",
+                "order_id": "5755600484986643139",
+                "match_count": 3,
+                "create_time_ns": "1772092422307222939",
+                "transact_time_ns": "1772092422306935097"
+            },
+            {
+                "account_id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                "event_date": "2026-02-26",
+                "journal_type": "TRADING",
+                "side": "SELL",
+                "instrument_name": "LINK_USD",
+                "fees": "-1.80668360",
+                "trade_id": "5755600643031727266",
+                "trade_match_id": "4611686018453273863",
+                "create_time": 1772092422307,
+                "traded_price": "9.199",
+                "traded_quantity": "39.28",
+                "fee_instrument_name": "USD",
+                "client_oid": "1772092422000",
+                "taker_side": "TAKER",
+                "order_id": "5755600484986643139",
+                "match_count": 1,
+                "create_time_ns": "1772092422307189454",
+                "transact_time_ns": "1772092422306935097"
+            }
+        ]
+    }
+}

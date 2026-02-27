@@ -1,0 +1,67 @@
+{
+    "id": 1234567,
+    "method": "private/user-balance",
+    "code": 0,
+    "result": {
+        "data": [
+            {
+                "total_available_balance": "28000.0",
+                "total_margin_balance": "28000.0",
+                "total_initial_margin": "0.0",
+                "total_haircut": "0.0",
+                "total_position_im": "0.0",
+                "total_maintenance_margin": "0.0",
+                "total_position_cost": "0.0",
+                "total_cash_balance": "3000.0",
+                "total_collateral_value": "28000.0",
+                "total_session_unrealized_pnl": "0.0",
+                "instrument_name": "USD",
+                "total_session_realized_pnl": "0.0",
+                "position_balances": [
+                    {
+                        "quantity": "0.25",
+                        "reserved_qty": "0.0",
+                        "collateral_amount": "0.0",
+                        "haircut": "0.0",
+                        "collateral_eligible": false,
+                        "market_value": "25000.0",
+                        "max_withdrawal_balance": "0.25",
+                        "instrument_name": "BTC",
+                        "hourly_interest_rate": "0.0"
+                    },
+                    {
+                        "quantity": "5.0",
+                        "reserved_qty": "0.0",
+                        "collateral_amount": "0.0",
+                        "haircut": "0.0",
+                        "collateral_eligible": false,
+                        "market_value": "15000.0",
+                        "max_withdrawal_balance": "5.0",
+                        "instrument_name": "ETH",
+                        "hourly_interest_rate": "0.0"
+                    },
+                    {
+                        "quantity": "3000.0",
+                        "reserved_qty": "0.0",
+                        "collateral_amount": "0.0",
+                        "haircut": "0.0",
+                        "collateral_eligible": false,
+                        "market_value": "3000.0",
+                        "max_withdrawal_balance": "3000.0",
+                        "instrument_name": "USD",
+                        "hourly_interest_rate": "0.0"
+                    }
+                ],
+                "credit_limits": [],
+                "total_effective_leverage": "0.0",
+                "position_limit": "1000000.0",
+                "used_position_limit": "0.0",
+                "total_borrow": "0.0",
+                "margin_score": "0.0",
+                "is_liquidating": false,
+                "has_risk": false,
+                "terminatable": false
+            }
+        ]
+    }
+}

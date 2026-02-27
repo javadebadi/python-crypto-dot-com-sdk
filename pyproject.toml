@@ -40,7 +40,9 @@ dev = [
     "invoke>=2.2.0",
     "isort>=5.13.2",
     "mypy>=1.9.0",
+    "pandas-stubs>=3.0.0.260204",
     "pytest>=8.1.1",
+    "types-pytz>=2025.2.0.20251108",
     "types-requests>=2.31.0",
 ]
 

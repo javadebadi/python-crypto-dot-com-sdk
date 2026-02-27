@@ -160,6 +160,7 @@ cython_debug/
 #.idea/
 
 logs/
+logs_trade/
 x.py
 x.json
 crypto.com.env

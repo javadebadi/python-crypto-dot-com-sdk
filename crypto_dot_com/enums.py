@@ -12,6 +12,7 @@ class CryptoDotComMethodsEnum(StrEnum):
     PRIVATE_GET_ORDER_DETAILS = "private/get-order-detail"
     PUBLIC_GET_CANDLESTICK = "public/get-candlestick"
     PRIVATE_USER_BALANCE = "private/user-balance"
+    PRIVATE_GET_TRADES = "private/get-trades"
 
 
 class SideEnum(StrEnum):

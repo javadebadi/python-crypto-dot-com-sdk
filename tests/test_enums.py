@@ -38,15 +38,14 @@ import pytest
 from xarizmi.enums import IntervalTypeEnum
 from xarizmi.enums import OrderStatusEnum
 
+from crypto_dot_com.enums import TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM
 from crypto_dot_com.enums import CandlestickTimeInterval
 from crypto_dot_com.enums import CryptoDotComMethodsEnum
 from crypto_dot_com.enums import ExecInstEnum
 from crypto_dot_com.enums import OrderTypeEnum
 from crypto_dot_com.enums import SideEnum
 from crypto_dot_com.enums import StatusEnum
-from crypto_dot_com.enums import TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM
 from crypto_dot_com.enums import TimeInForceEnum
-
 
 # ---------------------------------------------------------------------------
 # TestCryptoDotComMethodsEnum
@@ -60,33 +59,54 @@ class TestCryptoDotComMethodsEnum:
     """
 
     def test_private_get_order_history(self) -> None:
-        assert CryptoDotComMethodsEnum.PRIVATE_GET_ORDER_HISTORY == "private/get-order-history"
+        assert (
+            CryptoDotComMethodsEnum.PRIVATE_GET_ORDER_HISTORY.value
+            == "private/get-order-history"
+        )
 
     def test_private_create_order(self) -> None:
-        assert CryptoDotComMethodsEnum.PRIVATE_CREATE_ORDER == "private/create-order"
+        assert (
+            CryptoDotComMethodsEnum.PRIVATE_CREATE_ORDER.value
+            == "private/create-order"
+        )
 
     def test_private_cancel_all_orders(self) -> None:
-        assert CryptoDotComMethodsEnum.PRIVATE_CANCEL_ALL_ORDERS == "private/cancel-all-orders"
+        assert (
+            CryptoDotComMethodsEnum.PRIVATE_CANCEL_ALL_ORDERS.value
+            == "private/cancel-all-orders"
+        )
 
     def test_private_cancel_order(self) -> None:
-        assert CryptoDotComMethodsEnum.PRIVATE_CANCEL_ORDER == "private/cancel-order"
+        assert (
+            CryptoDotComMethodsEnum.PRIVATE_CANCEL_ORDER.value
+            == "private/cancel-order"
+        )
 
     def test_private_get_order_details(self) -> None:
-        assert CryptoDotComMethodsEnum.PRIVATE_GET_ORDER_DETAILS == "private/get-order-detail"
+        assert (
+            CryptoDotComMethodsEnum.PRIVATE_GET_ORDER_DETAILS.value
+            == "private/get-order-detail"
+        )
 
     def test_public_get_candlestick(self) -> None:
-        assert CryptoDotComMethodsEnum.PUBLIC_GET_CANDLESTICK == "public/get-candlestick"
+        assert (
+            CryptoDotComMethodsEnum.PUBLIC_GET_CANDLESTICK.value
+            == "public/get-candlestick"
+        )
 
     def test_private_user_balance(self) -> None:
-        assert CryptoDotComMethodsEnum.PRIVATE_USER_BALANCE == "private/user-balance"
+        assert (
+            CryptoDotComMethodsEnum.PRIVATE_USER_BALANCE.value
+            == "private/user-balance"
+        )
 
     def test_all_members_are_strings(self) -> None:
         """StrEnum members must behave as plain strings."""
         for member in CryptoDotComMethodsEnum:
             assert isinstance(member, str)
 
-    def test_seven_methods_defined(self) -> None:
-        assert len(CryptoDotComMethodsEnum) == 7
+    def test_eight_methods_defined(self) -> None:
+        assert len(CryptoDotComMethodsEnum) == 8
 
 
 # ---------------------------------------------------------------------------
@@ -146,7 +166,8 @@ class TestOrderTypeEnum:
 
 
 class TestTimeInForceEnum:
-    """Time-in-force controls when an unfilled order is automatically cancelled."""
+    """Time-in-force controls when an unfilled order is automatically
+    cancelled."""
 
     def test_good_till_cancel(self) -> None:
         assert TimeInForceEnum.GOOD_TILL_CANCEL == "GOOD_TILL_CANCEL"
@@ -226,14 +247,22 @@ class TestStatusEnum:
 
     def test_rejected_maps_to_cancelled(self) -> None:
         """A rejected order never entered the book — treat as cancelled."""
-        assert StatusEnum.REJECTED.to_xarizmi_status() == OrderStatusEnum.CANCELLED
+        assert (
+            StatusEnum.REJECTED.to_xarizmi_status()
+            == OrderStatusEnum.CANCELLED
+        )
 
     def test_canceled_maps_to_cancelled(self) -> None:
-        assert StatusEnum.CANCELED.to_xarizmi_status() == OrderStatusEnum.CANCELLED
+        assert (
+            StatusEnum.CANCELED.to_xarizmi_status()
+            == OrderStatusEnum.CANCELLED
+        )
 
     def test_expired_maps_to_cancelled(self) -> None:
         """An order expired due to time-in-force — treat as cancelled."""
-        assert StatusEnum.EXPIRED.to_xarizmi_status() == OrderStatusEnum.CANCELLED
+        assert (
+            StatusEnum.EXPIRED.to_xarizmi_status() == OrderStatusEnum.CANCELLED
+        )
 
     def test_all_terminal_statuses_covered(self) -> None:
         """Every StatusEnum member must return without raising."""
@@ -244,7 +273,8 @@ class TestStatusEnum:
     def test_cancelled_group_has_three_members(self) -> None:
         """REJECTED, CANCELED, and EXPIRED all collapse to CANCELLED."""
         cancelled = [
-            s for s in StatusEnum
+            s
+            for s in StatusEnum
             if s.to_xarizmi_status() == OrderStatusEnum.CANCELLED
         ]
         assert len(cancelled) == 3
@@ -262,40 +292,40 @@ class TestCandlestickTimeInterval:
     """
 
     def test_min_1(self) -> None:
-        assert CandlestickTimeInterval.MIN_1 == "1m"
+        assert CandlestickTimeInterval.MIN_1.value == "1m"
 
     def test_min_5(self) -> None:
-        assert CandlestickTimeInterval.MIN_5 == "5m"
+        assert CandlestickTimeInterval.MIN_5.value == "5m"
 
     def test_min_15(self) -> None:
-        assert CandlestickTimeInterval.MIN_15 == "15m"
+        assert CandlestickTimeInterval.MIN_15.value == "15m"
 
     def test_min_30(self) -> None:
-        assert CandlestickTimeInterval.MIN_30 == "30m"
+        assert CandlestickTimeInterval.MIN_30.value == "30m"
 
     def test_hour_1(self) -> None:
-        assert CandlestickTimeInterval.HOUR_1 == "1h"
+        assert CandlestickTimeInterval.HOUR_1.value == "1h"
 
     def test_hour_2(self) -> None:
-        assert CandlestickTimeInterval.HOUR_2 == "2h"
+        assert CandlestickTimeInterval.HOUR_2.value == "2h"
 
     def test_hour_4(self) -> None:
-        assert CandlestickTimeInterval.HOUR_4 == "4h"
+        assert CandlestickTimeInterval.HOUR_4.value == "4h"
 
     def test_hour_12(self) -> None:
-        assert CandlestickTimeInterval.HOUR_12 == "12h"
+        assert CandlestickTimeInterval.HOUR_12.value == "12h"
 
     def test_day_1(self) -> None:
-        assert CandlestickTimeInterval.DAY_1 == "1D"
+        assert CandlestickTimeInterval.DAY_1.value == "1D"
 
     def test_day_7(self) -> None:
-        assert CandlestickTimeInterval.DAY_7 == "7D"
+        assert CandlestickTimeInterval.DAY_7.value == "7D"
 
     def test_day_14(self) -> None:
-        assert CandlestickTimeInterval.DAY_14 == "14D"
+        assert CandlestickTimeInterval.DAY_14.value == "14D"
 
     def test_month_1(self) -> None:
-        assert CandlestickTimeInterval.MONTH_1 == "1M"
+        assert CandlestickTimeInterval.MONTH_1.value == "1M"
 
     def test_twelve_intervals_defined(self) -> None:
         assert len(CandlestickTimeInterval) == 12
@@ -309,8 +339,13 @@ class TestCandlestickTimeInterval:
 
     def test_lookup_by_name(self) -> None:
         """get_all_candlesticks accepts interval as the enum name string."""
-        assert CandlestickTimeInterval["MIN_1"] is CandlestickTimeInterval.MIN_1
-        assert CandlestickTimeInterval["MONTH_1"] is CandlestickTimeInterval.MONTH_1
+        assert (
+            CandlestickTimeInterval["MIN_1"] is CandlestickTimeInterval.MIN_1
+        )
+        assert (
+            CandlestickTimeInterval["MONTH_1"]
+            is CandlestickTimeInterval.MONTH_1
+        )
 
     def test_invalid_value_raises(self) -> None:
         with pytest.raises(ValueError):
@@ -334,13 +369,15 @@ class TestTimeIntervalMapping:
     def test_every_interval_has_a_mapping(self) -> None:
         """No CandlestickTimeInterval member may be absent from the dict."""
         for interval in CandlestickTimeInterval:
-            assert interval in TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM, (
-                f"{interval!r} is missing from TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM"
-            )
+            assert (
+                interval in TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM
+            ), f"{interval!r} is missing from the interval mapping"
 
     def test_mapping_has_no_extra_keys(self) -> None:
         """The dict must not contain keys that are not valid intervals."""
-        assert len(TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM) == len(CandlestickTimeInterval)
+        assert len(TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM) == len(
+            CandlestickTimeInterval
+        )
 
     def test_all_values_are_interval_type_enum(self) -> None:
         for value in TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM.values():
@@ -349,37 +386,97 @@ class TestTimeIntervalMapping:
     # --- individual mappings ---
 
     def test_min_1_maps_correctly(self) -> None:
-        assert TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[CandlestickTimeInterval.MIN_1] == IntervalTypeEnum.MIN_1
+        assert (
+            TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[
+                CandlestickTimeInterval.MIN_1
+            ]
+            == IntervalTypeEnum.MIN_1
+        )
 
     def test_min_5_maps_correctly(self) -> None:
-        assert TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[CandlestickTimeInterval.MIN_5] == IntervalTypeEnum.MIN_5
+        assert (
+            TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[
+                CandlestickTimeInterval.MIN_5
+            ]
+            == IntervalTypeEnum.MIN_5
+        )
 
     def test_min_15_maps_correctly(self) -> None:
-        assert TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[CandlestickTimeInterval.MIN_15] == IntervalTypeEnum.MIN_15
+        assert (
+            TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[
+                CandlestickTimeInterval.MIN_15
+            ]
+            == IntervalTypeEnum.MIN_15
+        )
 
     def test_min_30_maps_correctly(self) -> None:
-        assert TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[CandlestickTimeInterval.MIN_30] == IntervalTypeEnum.MIN_30
+        assert (
+            TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[
+                CandlestickTimeInterval.MIN_30
+            ]
+            == IntervalTypeEnum.MIN_30
+        )
 
     def test_hour_1_maps_correctly(self) -> None:
-        assert TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[CandlestickTimeInterval.HOUR_1] == IntervalTypeEnum.HOUR_1
+        assert (
+            TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[
+                CandlestickTimeInterval.HOUR_1
+            ]
+            == IntervalTypeEnum.HOUR_1
+        )
 
     def test_hour_2_maps_correctly(self) -> None:
-        assert TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[CandlestickTimeInterval.HOUR_2] == IntervalTypeEnum.HOUR_2
+        assert (
+            TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[
+                CandlestickTimeInterval.HOUR_2
+            ]
+            == IntervalTypeEnum.HOUR_2
+        )
 
     def test_hour_4_maps_correctly(self) -> None:
-        assert TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[CandlestickTimeInterval.HOUR_4] == IntervalTypeEnum.HOUR_4
+        assert (
+            TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[
+                CandlestickTimeInterval.HOUR_4
+            ]
+            == IntervalTypeEnum.HOUR_4
+        )
 
     def test_hour_12_maps_correctly(self) -> None:
-        assert TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[CandlestickTimeInterval.HOUR_12] == IntervalTypeEnum.HOUR_12
+        assert (
+            TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[
+                CandlestickTimeInterval.HOUR_12
+            ]
+            == IntervalTypeEnum.HOUR_12
+        )
 
     def test_day_1_maps_correctly(self) -> None:
-        assert TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[CandlestickTimeInterval.DAY_1] == IntervalTypeEnum.DAY_1
+        assert (
+            TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[
+                CandlestickTimeInterval.DAY_1
+            ]
+            == IntervalTypeEnum.DAY_1
+        )
 
     def test_day_7_maps_correctly(self) -> None:
-        assert TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[CandlestickTimeInterval.DAY_7] == IntervalTypeEnum.DAY_7
+        assert (
+            TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[
+                CandlestickTimeInterval.DAY_7
+            ]
+            == IntervalTypeEnum.DAY_7
+        )
 
     def test_day_14_maps_correctly(self) -> None:
-        assert TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[CandlestickTimeInterval.DAY_14] == IntervalTypeEnum.DAY_14
+        assert (
+            TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[
+                CandlestickTimeInterval.DAY_14
+            ]
+            == IntervalTypeEnum.DAY_14
+        )
 
     def test_month_1_maps_correctly(self) -> None:
-        assert TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[CandlestickTimeInterval.MONTH_1] == IntervalTypeEnum.MONTH_1
+        assert (
+            TIME_INTERVAL_CRYPTO_DOT_COM_TO_XARIZMI_ENUM[
+                CandlestickTimeInterval.MONTH_1
+            ]
+            == IntervalTypeEnum.MONTH_1
+        )

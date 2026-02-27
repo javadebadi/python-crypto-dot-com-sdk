@@ -54,8 +54,10 @@ def run_linters(
             pty=True,
             echo=True,
         )
-        ctx.run("mypy --version", pty=True, echo=True)
-        ctx.run(f"mypy  {path}", pty=True, echo=True)
+        ctx.run(".venv/bin/mypy --version", pty=True, echo=True)
+        ctx.run(
+            f".venv/bin/mypy --no-incremental {path}", pty=True, echo=True
+        )
         ctx.run(f"flake8  {path}", pty=True, echo=True)
         ctx.run(f"black --check {path}", pty=True, echo=True)
         print("Finished linting!")
@@ -69,7 +71,7 @@ def lint(ctx: Context) -> None:
 
 @task
 def test(ctx: Context) -> None:
-    ctx.run("pytest tests")
+    ctx.run(".venv/bin/pytest tests")
 
 
 @task

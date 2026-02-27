@@ -1,0 +1,32 @@
+{
+    "id": 1234567,
+    "method": "private/get-order-detail",
+    "code": 0,
+    "result": {
+        "account_id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        "order_id": "6531362339749152100",
+        "client_oid": "1704067200000",
+        "order_type": "LIMIT",
+        "time_in_force": "GOOD_TILL_CANCEL",
+        "side": "BUY",
+        "exec_inst": "[]",
+        "quantity": "100.0",
+        "order_value": "14.5",
+        "maker_fee_rate": "0.001",
+        "taker_fee_rate": "0.002",
+        "avg_price": "0.145",
+        "ref_price": "0",
+        "cumulative_quantity": "100.0",
+        "cumulative_value": "14.5",
+        "cumulative_fee": "-0.0145",
+        "status": "FILLED",
+        "update_user_id": "user-001",
+        "order_date": "2024-01-01",
+        "instrument_name": "CRO_USD",
+        "fee_instrument_name": "CRO",
+        "reason": 0,
+        "create_time": 1704067200000,
+        "create_time_ns": 1704067200000000000,
+        "update_time": 1704067260000
+    }
+}

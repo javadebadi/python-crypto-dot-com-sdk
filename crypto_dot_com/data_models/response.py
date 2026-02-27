@@ -1,3 +1,4 @@
+import datetime
 from typing import Any
 
 from pydantic import BaseModel
@@ -60,3 +61,23 @@ class GetUserBalanceDataMessage(BaseModel):
     is_liquidating: bool
     has_risk: bool
     terminatable: bool
+
+
+class TradeHistoryDataMessage(BaseModel):
+    account_id: str
+    trade_id: str
+    trade_match_id: str | None
+    order_id: str
+    instrument_name: str
+    side: str
+    traded_price: float
+    traded_quantity: float
+    fees: float
+    fee_instrument_name: str
+    client_oid: str | None
+    taker_side: str | None
+    create_time: datetime.datetime
+    create_time_ns: str | None
+    transact_time_ns: str | None
+    match_count: int
+    event_date: str
