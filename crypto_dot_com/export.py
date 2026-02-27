@@ -225,7 +225,7 @@ def export_order_history(
     reference_date = datetime.date.today()
     all_data: list[OrderHistoryDataMessage] = []
     for i in range(0, past_n_days + 1):
-        print("Getting orders of past {i} days")
+        print(f"Getting orders of past {i} days")
         day = reference_date - datetime.timedelta(days=i)
         data = client.get_all_order_history_of_a_day(
             instrument_name=None, day=day
