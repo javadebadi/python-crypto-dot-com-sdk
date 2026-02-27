@@ -160,3 +160,7 @@ cython_debug/
 #.idea/
 
 logs/
+x.py
+x.json
+crypto.com.env
+.python-version

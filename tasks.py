@@ -74,31 +74,26 @@ def test(ctx: Context) -> None:
 
 @task
 def build(ctx: Context) -> None:
-    ctx.run("python3.12 setup.py sdist bdist_wheel")
+    ctx.run("uv build")
     print("Finished build!")
 
 
 @task
 def deploy(ctx: Context) -> None:
-    ctx.run("python3.12 -m twine upload dist/*")
+    ctx.run("uv publish")
     print("Finished deploy!")
 
 
 @task
-def freeze(ctx: Context) -> None:
-    ctx.run("pip freeze > requirements_lock.txt")
-    print("Freezed python packages")
+def install(ctx: Context) -> None:
+    ctx.run("uv sync --all-groups")
+    print("Installed python packages!")
 
 
 @task
-def install(ctx: Context) -> None:
-    ctx.run("python3.12 -m pip install pip-tools")
-    # ctx.run("python3.12 -m pip-compile requirements.in")
-    # ctx.run("python3.12 -m pip-compile requirements_dev.in")
-    ctx.run("python3.12 -m pip install -r requirements.txt")
-    ctx.run("python3.12 -m pip install -r requirements_dev.txt")
-    ctx.run("python3.12 -m pip freeze > requirements_lock.txt")
-    print("Installed python packages and freezed!")
+def lock(ctx: Context) -> None:
+    ctx.run("uv lock")
+    print("Updated uv.lock")
 
 
 @task
@@ -116,4 +111,5 @@ ns.add_task(test)
 ns.add_task(build)
 ns.add_task(deploy)
 ns.add_task(install)
+ns.add_task(lock)
 ns.add_task(tag)
